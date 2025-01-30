@@ -1,0 +1,77 @@
+/* Estilos del encabezado */
+header {
+    width: 100%;
+    background: white;
+    padding: 15px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Contenedor del logo con margen adicional */
+.logo-container {
+    display: flex;
+    align-items: center;
+    margin-left: 20px; /* Agrega separación de los bordes */
+}
+
+/* Estilos del logo */
+.logo {
+    font-size: 59px;
+    color: #600020;
+    margin: 0;
+    padding: 5px 10px; /* Añade un pequeño espaciado superior e inferior */
+}
+
+/* Menú de navegación */
+nav {
+    display: flex;
+    align-items: center;
+    gap: 20px; /* Espaciado entre los enlaces */
+}
+
+nav a {
+    text-decoration: none;
+    color: black;
+    font-size: 16px;
+    transition: color 0.3s;
+}
+
+nav a:hover {
+    color: #600020;
+}
+
+/* Botón de cerrar sesión */
+.logout-button {
+    background: #600020;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.logout-button:hover {
+    background: #8a0030;
+}
+
+/* 📱 Responsividad */
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        text-align: center;
+        padding: 15px 20px;
+    }
+
+    .logo-container {
+        margin-bottom: 10px;
+    }
+
+    nav {
+        flex-direction: column;
+        gap: 10px;
+    }
+}

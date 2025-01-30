@@ -82,6 +82,8 @@ DATABASES = {
 }
 
 '''
+ESTE ES EL CODIGO CORRECTO PARA CONECTAR LA DB
+
 #Es el formato para conectar la base de dato de MySQL
 DATABASES = {
     'default': {

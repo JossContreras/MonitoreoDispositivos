@@ -1,0 +1,307 @@
+/* General */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f8f8;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.activity-header {
+    margin-bottom: 30px;
+    text-align: left; /* Alineación a la izquierda */
+}
+
+.custom-hr {
+    border-radius: 5px;
+    height: 3px;
+    background-color: #600020;
+    width: auto;
+    margin: 20px auto;
+}
+
+.subtitle {
+    font-size: 16px;
+    color: gray;
+    margin-bottom: 20px;
+}
+
+h1 {
+    font-size: 28px;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+main {
+    width: 90%;
+    max-width: 1100px;
+    margin-top: 30px;
+    text-align: center;
+}
+
+/* Encabezado */
+header {
+    width: 100%;
+    background: white;
+    padding: 15px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    font-size: 28px;
+    color: #600020;
+    margin: 0 90px;
+}
+
+nav {
+    display: flex;
+    gap: 15px;
+}
+
+nav a {
+    text-decoration: none;
+    color: black;
+    font-size: 16px;
+    transition: color 0.3s ease-in-out;
+}
+
+nav a:hover {
+    color: #600020;
+    transform: scale(1.05);
+}
+
+.logout-button {
+    background: #600020;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.logout-button:hover {
+    background: #8a0030;
+    transform: scale(1.1);
+}
+
+/* Contenido principal */
+main {
+    width: 90%;
+    max-width: 1100px;
+    margin-top: 30px;
+    text-align: center;
+}
+
+h1 {
+    font-size: 28px;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    font-size: 16px;
+    color: gray;
+    margin-bottom: 20px;
+}
+
+/* Contenedor de tarjetas */
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 50px;
+    perspective: 1500px;
+    justify-content: center;
+}
+
+/* Tarjetas con efecto de giro */
+.card {
+    width: 100%;
+    height: 200px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 1.2s;
+    cursor: pointer;
+}
+
+.card:hover {
+    transform: rotateY(180deg);
+}
+
+/* Lado frontal y trasero */
+.card-front, .card-back {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    backface-visibility: hidden;
+    border-radius: 15px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0px;
+}
+
+/* Lado frontal */
+.card-front {
+    background: white;
+}
+
+.card-front img {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 10px;
+}
+
+/* Efecto de color en la segunda palabra */
+.card-front h3 {
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.card-front h3 span {
+    color: #600020;
+    font-weight: bold;
+}
+
+/* Lado trasero */
+.card-back {
+    background: #600020;
+    color: white;
+    transform: rotateY(180deg);
+    text-align: center;
+    font-size: 14px;
+    padding: 10px;
+}
+
+/* 📱 Responsividad */
+@media (max-width: 1024px) {
+    .logo {
+        font-size: 24px;
+        margin: 0 30px;
+    }
+
+    nav {
+        gap: 10px;
+    }
+
+    .logout-button {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+
+    .activity-header {
+        margin-bottom: 20px;
+    }
+
+    .cards-container {
+        gap: 30px;
+    }
+
+    .card {
+        height: 180px;
+    }
+
+    .card-front img {
+        width: 50px;
+        height: 50px;
+    }
+
+    .card-front h3 {
+        font-size: 14px;
+    }
+
+    .card-back {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        padding: 10px 20px;
+    }
+
+    .logo {
+        font-size: 22px;
+        margin: 0;
+    }
+
+    nav {
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .cards-container {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 20px;
+    }
+
+    .card {
+        height: 150px;
+    }
+
+    .card-front img {
+        width: 45px;
+        height: 45px;
+    }
+
+    .card-front h3 {
+        font-size: 12px;
+    }
+
+    .card-back {
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo {
+        font-size: 18px;
+    }
+
+    nav a {
+        font-size: 14px;
+    }
+
+    .logout-button {
+        font-size: 10px;
+        padding: 5px 10px;
+    }
+
+    .activity-header {
+        margin-bottom: 15px;
+    }
+
+    .cards-container {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .card {
+        height: 120px;
+    }
+
+    .card-front img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .card-front h3 {
+        font-size: 8px;
+    }
+
+    .card-back {
+        font-size: 8px;
+    }
+}
