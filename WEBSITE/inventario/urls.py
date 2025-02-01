@@ -1,12 +1,18 @@
-from django.urls import path
+from django.db import router
+from django.urls import include, path
 from . import views
+from rest_framework.routers import DefaultRouter
+from .views import UbicacionViewSet
+
+router = DefaultRouter()
+router.register(r'ubicaciones', UbicacionViewSet)
 
 urlpatterns = [
     #Pagina de inicio
     path('', views.index, name='principal'),
+    path('inicioo', views.pagprin, name='inicio'),
     #paginas generales
-    path('inicio', views.inicio, name='inicio'),
-    #Formularios
+    #Formularios ABRIR DE MANERA VISUAL SIN CARGAR DATOS
     path('crear_dispositivo', views.crear_dispositivo, name='crear_dispositivo'),
     path('cambiar_dispositivo', views.cambiar_dispositivo, name='cambiar_dispositivo'),
     path('editar_dispositivo', views.editar_dispositivo, name='editar_dispositivo'),
@@ -15,4 +21,13 @@ urlpatterns = [
     #inicio de sesion
     path('login', views.iniciar_cuenta, name='login'),
     path('registrar', views.registrar_cuenta, name='registrar'),
+     
+
+     #=========================================================================================
+    path('api/', include(router.urls)),
+
+    path('ubicaciones/vista/', views.ubicaciones_view, name='ubicaciones_list'),
+    path('ubicaciones/nueva/', views.ubicacion_create, name='ubicacion_create'),
+
+    path('crear/dispositivo', views.dispositivo_create, name='crear_dispositivo'),
 ]

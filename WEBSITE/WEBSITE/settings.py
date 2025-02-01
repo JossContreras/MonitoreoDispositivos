@@ -77,29 +77,26 @@ WSGI_APPLICATION = 'WEBSITE.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+'''
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 '''
-ESTE ES EL CODIGO CORRECTO PARA CONECTAR LA DB
 
 #Es el formato para conectar la base de dato de MySQL
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'nombre_base_datos',
-        'USER': 'tu_usuario',
-        'PASSWORD': 'tu_contraseña',
+        'NAME': 'dbinventario',
+        'USER': 'root',
+        'PASSWORD': '0506',
         'HOST': 'localhost',  # O la IP del servidor de base de datos
         'PORT': '3306',       # Puerto predeterminado de MySQL
     }
 }
-'''
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

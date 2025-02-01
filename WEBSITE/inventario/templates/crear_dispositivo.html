@@ -1,0 +1,29 @@
+<form method="POST">
+    {% csrf_token %}
+
+    <label for="nombre">Nombre:</label>
+    <input type="text" name="nombre" required>
+
+    <label for="tipo_elemento">Tipo de Elemento:</label>
+    <input type="text" name="tipo_elemento">
+
+    <label for="estado">Estado:</label>
+    <input type="text" name="estado">
+
+    <label for="fecha_adquisicion">Fecha de Adquisición:</label>
+    <input type="date" name="fecha_adquisicion">
+
+    <label for="ubicacion">Ubicación:</label>
+    <select name="ubicacion" required>
+        <option value="">Seleccione una ubicación</option>
+        {% for ubicacion in ubicaciones %}
+            <option value="{{ ubicacion.id_ubicacion }}">{{ ubicacion.nombre_ubicacion }}</option>
+        {% endfor %}
+    </select>
+
+    <button type="submit">Guardar</button>
+</form>
+
+{% if error %}
+    <p style="color:red;">{{ error }}</p>
+{% endif %}
