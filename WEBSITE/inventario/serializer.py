@@ -4,8 +4,8 @@ from .models import Ubicacion
 class UbicacionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ubicacion
-        fields = '__all__'  # O puedes especificar los campos: ['id_ubicacion', 'nombre_ubicacion']
-
+        fields = '__all__'  
+        
 """"
 class UbicacionSerializer(serializers.ModelSerializer):
     class Meta:
