@@ -1,0 +1,60 @@
+{% block content %}
+  <h2>Insertar Nuevo Dispositivo</h2>
+
+  <form method="POST">
+    {% csrf_token %}
+
+    <label for="nombre_dispositivo">Nombre del Dispositivo:</label>
+    <input type="text" id="nombre_dispositivo" name="nombre_dispositivo" required>
+
+    <label for="tipo_elemento">Tipo de Elemento:</label>
+    <input type="text" id="tipo_elemento" name="tipo_elemento" required>
+
+    <label for="estado">Estado:</label>
+    <select id="estado" name="estado" required>
+        <option value="" disabled selected>Seleccione un estado</option>
+        <option value="Activo">Activo</option>
+        <option value="En mantenimiento">En mantenimiento</option>
+        <option value="Obsoleto">Obsoleto</option>
+    </select>
+
+    <label for="fecha_adquisicion">Fecha de Adquisición:</label>
+    <input type="date" id="fecha_adquisicion" name="fecha_adquisicion" required>
+
+    <label for="ubicacion">Ubicación:</label>
+    <select id="ubicacion" name="ubicacion" required>
+        {% for ubicacion in ubicaciones %}
+    <option value="{{ ubicacion.id_ubicacion }}">{{ ubicacion.nombre_ubicacion }}</option>
+{% empty %}
+    <option value="" disabled>No hay ubicaciones disponibles</option>
+{% endfor %}
+    </select>
+
+    <label for="marca">Marca:</label>
+    <input type="text" id="marca" name="marca">
+
+    <label for="modelo">Modelo:</label>
+    <input type="text" id="modelo" name="modelo">
+
+    <label for="numero_serie">Número de Serie:</label>
+    <input type="text" id="numero_serie" name="numero_serie" required>
+
+    <label for="sistema_operativo">Sistema Operativo (Opcional):</label>
+    <input type="text" id="sistema_operativo" name="sistema_operativo">
+
+    <label for="version_firmware">Versión de Firmware (Opcional):</label>
+    <input type="text" id="version_firmware" name="version_firmware">
+
+    <label for="descripcion_configuracion">Descripción de la Configuración (Opcional):</label>
+    <textarea id="descripcion_configuracion" name="descripcion_configuracion"></textarea>
+
+    <label for="parametros_personalizados">Parámetros Personalizados (Opcional):</label>
+    <textarea id="parametros_personalizados" name="parametros_personalizados"></textarea>
+
+    <button type="submit">Guardar</button>
+  </form>
+
+  {% if error %}
+    <p style="color:red;">{{ error }}</p>
+  {% endif %}
+{% endblock %}

@@ -2,7 +2,7 @@ from django.db import router
 from django.urls import include, path
 from . import views
 from rest_framework.routers import DefaultRouter
-from .views import UbicacionViewSet
+from .views import UbicacionViewSet, eliminar_inventario_api
 
 router = DefaultRouter()
 router.register(r'ubicaciones', UbicacionViewSet)
@@ -29,5 +29,6 @@ urlpatterns = [
     path('ubicaciones/vista/', views.ubicaciones_view, name='ubicaciones_list'),
     path('ubicaciones/nueva/', views.ubicacion_create, name='ubicacion_create'),
 
-    path('crear/dispositivo', views.dispositivo_create, name='crear_dispositivo'),
+    path('dispositivo/crear', views.insertar_dispositivo, name='crear_dispositivo'),
+    path('eliminar_inventario/<int:id_inventario>/', views.eliminar_inventario_api, name='eliminar_inventario'),
 ]

@@ -12,3 +12,4 @@ class UbicacionSerializer(serializers.ModelSerializer):
         model = Ubicacion
         fields = ['id', 'nombre_ubicacion', 'descripcion_ubicacion']
 """
+
