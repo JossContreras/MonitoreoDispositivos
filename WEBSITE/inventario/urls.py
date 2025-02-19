@@ -21,7 +21,21 @@ urlpatterns = [
     #inicio de sesion
     path('login', views.iniciar_cuenta, name='login'),
     path('registrar', views.registrar_cuenta, name='registrar'),
-     
+
+    #=========================================================================================
+
+    # Vista Eliminar dispositvos
+    path("dispositivo/eliminar", views.eliminar_inventario, name="eliminar_inventario"),
+    # Eliminar dispositivos API
+    path("api/eliminar_inventario/<int:id_inventario>/", eliminar_inventario_api, name="eliminar_inventario_api"),
+
+    # Actualizar dispositivos API
+    path("api/actualizar_dispositivo/<int:id_inventario>/", views.actualizar_dispositivo, name="actualizar_dispositivo"),
+
+    path("dispositivos/editar/<int:id_inventario>/", views.actualizar_dispositivo, name="editar_dispositivo"),
+
+    path('dispositivos/incidentes/', views.agregar_incidente, name='agregar_incidente'),
+    path("dispositivos/incidentes/formulario/", views.formulario_incidente, name="formulario_incidente"),
 
      #=========================================================================================
     path('api/', include(router.urls)),
@@ -31,4 +45,5 @@ urlpatterns = [
 
     path('dispositivo/crear', views.insertar_dispositivo, name='crear_dispositivo'),
     path('eliminar_inventario/<int:id_inventario>/', views.eliminar_inventario_api, name='eliminar_inventario'),
+    path("insertar_dispositivo/", views.insertar_dispositivo, name="insertar_dispositivo"),
 ]

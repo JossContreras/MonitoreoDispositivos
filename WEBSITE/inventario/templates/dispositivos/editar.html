@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Dispositivo</title>
+</head>
+<body>
+    <h2>Actualizar Dispositivo</h2>
+    <form method="POST">
+        {% csrf_token %}
+
+        <label for="nombre_dispositivo">Nombre:</label>
+        <input type="text" name="nombre_dispositivo" value="{{ inventario.nombre }}" required>
+
+        <label for="tipo_elemento">Tipo de Elemento:</label>
+        <input type="text" name="tipo_elemento" value="{{ inventario.tipo_elemento }}" required>
+
+        <label for="estado">Estado:</label>
+        <input type="text" name="estado" value="{{ inventario.estado }}" required>
+
+        <label for="fecha_adquisicion">Fecha de Adquisición:</label>
+        <input type="date" name="fecha_adquisicion" value="{{ inventario.fecha_adquisicion|date:'Y-m-d' }}" required>
+
+        <label for="ubicacion">Ubicación:</label>
+        <select name="ubicacion">
+            {% for ubicacion in ubicaciones %}
+                <option value="{{ ubicacion.id_ubicacion }}" {% if ubicacion.id_ubicacion == inventario.id_ubicacion.id_ubicacion %} selected {% endif %}>
+                    {{ ubicacion.nombre }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <h3>Detalles Técnicos</h3>
+        <label for="marca">Marca:</label>
+        <input type="text" name="marca" value="{{ detalles.marca }}" required>
+
+        <label for="modelo">Modelo:</label>
+        <input type="text" name="modelo" value="{{ detalles.modelo }}" required>
+
+        <label for="numero_serie">Número de Serie:</label>
+        <input type="text" name="numero_serie" value="{{ detalles.numero_serie }}" required>
+
+        <label for="sistema_operativo">Sistema Operativo:</label>
+        <input type="text" name="sistema_operativo" value="{{ detalles.sistema_operativo }}" required>
+
+        <label for="version_firmware">Versión Firmware:</label>
+        <input type="text" name="version_firmware" value="{{ detalles.version_firmware }}" required>
+
+        <h3>Configuración</h3>
+        <label for="descripcion_configuracion">Descripción:</label>
+        <textarea name="descripcion_configuracion" required>{{ configuracion.descripcion }}</textarea>
+
+        <label for="parametros_personalizados">Parámetros Personalizados:</label>
+        <textarea name="parametros_personalizados" required>{{ configuracion.parametros_personalizados }}</textarea>
+
+        <button type="submit">Actualizar</button>
+    </form>
+</body>
+</html>

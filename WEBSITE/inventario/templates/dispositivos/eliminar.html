@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eliminar Inventario</title>
+    <script>
+        function eliminarInventario() {
+            const idInventario = document.getElementById("id_inventario").value;
+
+            if (!idInventario) {
+                alert("Por favor, ingresa un ID de inventario.");
+                return;
+            }
+
+            fetch(`/api/eliminar_inventario/${idInventario}/`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert("Error: " + data.error);
+                } else {
+                    alert("Éxito: " + data.mensaje);
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Ocurrió un error al eliminar el inventario.");
+            });
+        }
+    </script>
+</head>
+<body>
+    <h2>Eliminar Inventario</h2>
+    <label for="id_inventario">ID del Inventario:</label>
+    <input type="number" id="id_inventario" placeholder="Ingrese el ID">
+    <button onclick="eliminarInventario()">Eliminar</button>
+</body>
+</html>
