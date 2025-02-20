@@ -54,7 +54,7 @@ CREATE TABLE Configuracion (
     id_inventario INT NOT NULL,
     descripcion TEXT,
     parametros_personalizados TEXT,
-    ultima_actualizacion DATE,
+    ultima_actualizacion DATE,  
     FOREIGN KEY (id_inventario) REFERENCES Inventario(id_inventario) 
 );
 
@@ -79,3 +79,21 @@ CREATE TABLE Historial_cambios (
     FOREIGN KEY (id_inventario) REFERENCES Inventario(id_inventario) ON DELETE CASCADE
 );
 
+ALTER TABLE Inventario ADD COLUMN ip VARCHAR(15) UNIQUE;
+
+CREATE TABLE Monitoreo (
+    id_monitoreo INT PRIMARY KEY AUTO_INCREMENT,
+    id_inventario INT NOT NULL,
+    fecha_hora DATETIME DEFAULT CURRENT_TIMESTAMP,
+    estado VARCHAR(10),  -- 'Activo' o 'Inactivo'
+    FOREIGN KEY (id_inventario) REFERENCES Inventario(id_inventario) ON DELETE CASCADE
+);
+
+CREATE TABLE Enlaces (
+    id_enlace INT PRIMARY KEY AUTO_INCREMENT,
+    dispositivo_origen INT NOT NULL,
+    dispositivo_destino INT NOT NULL,
+    estado VARCHAR(10),
+    FOREIGN KEY (dispositivo_origen) REFERENCES Inventario(id_inventario) ON DELETE CASCADE,
+    FOREIGN KEY (dispositivo_destino) REFERENCES Inventario(id_inventario) ON DELETE CASCADE
+);

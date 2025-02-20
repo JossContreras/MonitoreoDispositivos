@@ -1,0 +1,21 @@
+<form method="POST">
+    {% csrf_token %}
+    <label for="ip_origen">IP Origen:</label>
+    <input type="text" name="ip_origen" required>
+    
+    <label for="ip_destino">IP Destino:</label>
+    <input type="text" name="ip_destino" required>
+    
+    <button type="submit">Analizar</button>
+</form>
+
+{% if ruta %}
+    <h2>Ruta Calculada:</h2>
+    <ul>
+        {% for ip in ruta %}
+            <li>{{ ip }}</li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No hay conexión disponible.</p>
+{% endif %}
