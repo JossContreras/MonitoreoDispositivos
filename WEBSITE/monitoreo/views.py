@@ -6,6 +6,8 @@ import time
 from django.shortcuts import render
 from django.http import JsonResponse
 
+from .models import Inventario, Ubicacion
+
 # Configuración de la base de datos
 DB_CONFIG = {
     'host': 'localhost',
@@ -33,31 +35,27 @@ def convertir_ipv6_a_ipv4(ip):
     return ip  # Si no es IPv6 mapeado, devolver la IP original
 
 import subprocess
-import os
-import subprocess
-import re
-import os
-
-import subprocess
 import re
 import os
 
 def hacer_ping(ip):
     """Ejecuta un ping y devuelve el estado, la IP, el tiempo de respuesta y el motivo si hay error."""
+    if not ip:
+        return {"estado": "error", "motivo": "IP no proporcionada"}
+
     comando = ["ping", "-n", "1", ip] if os.name == "nt" else ["ping", "-c", "1", ip]
 
     try:
         resultado = subprocess.run(comando, capture_output=True, text=True, timeout=2)
 
         if resultado.returncode == 0:
-            # 🔍 Extraer el tiempo de respuesta con regex mejorado
+            # 🔍 Extraer el tiempo de respuesta 
             if os.name == "nt":
                 match = re.search(r"tiempo[=<]([\d]+)ms", resultado.stdout)  # Windows
             else:
                 match = re.search(r"time[=<]?([\d.]+) ?ms", resultado.stdout)  # Linux/macOS
 
             tiempo_respuesta = match.group(1) + " ms" if match else "Desconocido"
-
             return {"estado": "exito", "ip": ip, "tiempo": tiempo_respuesta}
 
         else:
@@ -69,7 +67,15 @@ def hacer_ping(ip):
     except Exception as e:
         return {"estado": "error", "ip": ip, "motivo": f"⚠ Error inesperado: {str(e)}"}
 
+def verificar_estado_dispositivo(request):
+    """Recibe una IP desde la interfaz, ejecuta el ping y devuelve el resultado en JSON."""
+    ip = request.GET.get('ip')
 
+    if not ip:
+        return JsonResponse({"estado": "error", "motivo": "IP no proporcionada"}, status=400)
+
+    resultado = hacer_ping(ip)  # Llama a la función hacer_ping()
+    return JsonResponse(resultado)
 
 def obtener_id_por_ip(ip):
     """Obtiene el ID del dispositivo basado en su IP."""
@@ -125,10 +131,10 @@ def analizar_ruta(request):
                 return False
 
             resultado_ping = hacer_ping(ip_actual)
-            ruta.append(resultado_ping)  # 🔥 Ahora incluye el tiempo
+            ruta.append(resultado_ping)  # incluye el tiempo y el ping
 
             if resultado_ping["estado"] == "error":
-                return False  # 🚨 Si hay error, se detiene el monitoreo
+                return False  # Si hay error, se detiene el monitoreo
 
             if ip_actual == ip_destino:
                 return True
@@ -145,3 +151,65 @@ def analizar_ruta(request):
         return render(request, "index.html", {"ruta": ruta})
 
     return render(request, "index.html", {"ruta": []})
+ #=========================================================================================================
+from django.shortcuts import render
+from django.http import JsonResponse
+from .models import Inventario, Ubicacion, DetallesTecnicos
+
+from django.shortcuts import render
+from django.http import JsonResponse
+from .models import Inventario, Ubicacion, DetallesTecnicos
+
+def inventario_por_ubicacion(request):
+    """Filtra el inventario con múltiples filtros seleccionables y devuelve datos en JSON si es AJAX."""
+    ubicaciones = Ubicacion.objects.all()
+    tipos = Inventario.objects.values_list('tipo_elemento', flat=True).distinct().exclude(tipo_elemento__isnull=True)
+    marcas = DetallesTecnicos.objects.values_list('marca', flat=True).distinct().exclude(marca__isnull=True)
+    sistemas = DetallesTecnicos.objects.values_list('sistema_operativo', flat=True).distinct().exclude(sistema_operativo__isnull=True)
+
+    # 🔹 Obtener parámetros de búsqueda
+    ubicacion_ids = request.GET.getlist('ubicacion[]')
+    ip_busqueda = request.GET.get('ip')
+    tipos_seleccionados = request.GET.getlist('tipo[]')
+    marcas_seleccionadas = request.GET.getlist('marca[]')
+    sistemas_seleccionados = request.GET.getlist('sistema[]')
+
+    # 🔹 Aplicar filtros dinámicamente
+    inventario = Inventario.objects.all()
+
+    if ip_busqueda:
+        inventario = inventario.filter(ip=ip_busqueda)
+    if ubicacion_ids:
+        inventario = inventario.filter(id_ubicacion__in=ubicacion_ids)
+    if tipos_seleccionados:
+        inventario = inventario.filter(tipo_elemento__in=tipos_seleccionados)
+    if marcas_seleccionadas:
+        inventario = inventario.filter(detallestecnicos__marca__in=marcas_seleccionadas)
+    if sistemas_seleccionados:
+        inventario = inventario.filter(detallestecnicos__sistema_operativo__in=sistemas_seleccionados)
+
+    # 🔹 Si es una solicitud AJAX, devolver JSON
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        data = [
+            {
+                "id_inventario": item.id_inventario,
+                "nombre": item.nombre,
+                "ubicacion": item.id_ubicacion.nombre_ubicacion,
+                "ip": item.ip if item.ip else "No disponible",
+                "tipo_elemento": item.tipo_elemento if item.tipo_elemento else "No especificado",
+                "marca": item.detallestecnicos.marca if hasattr(item, 'detallestecnicos') else "No disponible",
+                "sistema_operativo": item.detallestecnicos.sistema_operativo if hasattr(item, 'detallestecnicos') else "No disponible",
+                "estado": item.estado if item.estado else "Desconocido",
+                "fecha_adquisicion": item.fecha_adquisicion.strftime("%Y-%m-%d") if item.fecha_adquisicion else "No disponible"
+            }
+            for item in inventario
+        ]
+        return JsonResponse(data, safe=False)
+
+    return render(request, 'monitoreo_tr.html', {
+        'inventario': inventario,
+        'ubicaciones': ubicaciones,
+        'tipos': tipos,
+        'marcas': marcas,
+        'sistemas': sistemas
+    })

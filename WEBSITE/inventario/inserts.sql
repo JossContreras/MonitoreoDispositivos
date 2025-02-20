@@ -55,10 +55,6 @@ INSERT INTO Enlaces (dispositivo_origen, dispositivo_destino, estado) VALUES
 
 
 
-
-
-
-
 INSERT INTO Inventario (id_inventario, nombre, tipo_elemento, estado, fecha_adquisicion, id_ubicacion)
 VALUES 
 (1, 'Router Central', 'Router', 'Activo', '2023-05-12', 1),

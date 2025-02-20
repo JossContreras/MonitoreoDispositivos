@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario por Ubicación</title>
+    <link rel="stylesheet" href="{% static 'css/monitoreo_tr.css' %}">
+    <script src="{% static 'js/monitoreo_tr.js' %}" defer></script>
+</head>
+<body>
+    <h1>Inventario por Ubicación</h1>
+
+    <label>Ubicación:</label>
+    <select id="ubicacion" multiple>
+        {% for ubicacion in ubicaciones %}
+            <option value="{{ ubicacion.id_ubicacion }}">{{ ubicacion.nombre_ubicacion }}</option>
+        {% endfor %}
+    </select>
+
+    <!-- Botón para eliminar filtros -->
+<button onclick="eliminarFiltros()">Eliminar Filtros</button>
+
+
+    <fieldset>
+        <legend>Tipo de Dispositivo:</legend>
+        {% for tipo in tipos %}
+            <label><input type="checkbox" name="tipo" value="{{ tipo }}"> {{ tipo }}</label>
+        {% endfor %}
+    </fieldset>
+
+    <fieldset>
+        <legend>Marca:</legend>
+        {% for marca in marcas %}
+            <label><input type="checkbox" name="marca" value="{{ marca }}"> {{ marca }}</label>
+        {% endfor %}
+    </fieldset>
+
+    <fieldset>
+        <legend>Sistema Operativo:</legend>
+        {% for sistema in sistemas %}
+            <label><input type="checkbox" name="sistema" value="{{ sistema }}"> {{ sistema }}</label>
+        {% endfor %}
+    </fieldset>
+
+    <button onclick="verificarTodos()">Verificar Todos los Dispositivos</button>
+
+    <label for="buscar-ip">Buscar por IP:</label>
+    <input type="text" id="buscar-ip" placeholder="Ingrese una IP">
+    <button onclick="cargarInventario()">Buscar</button>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Ubicación</th>
+                <th>IP</th>
+                <th>Tipo</th>
+                <th>Marca</th>
+                <th>Sistema Operativo</th>
+                <th>Estado</th>
+                <th>Acción</th>
+                <th>Detalles</th>
+            </tr>
+        </thead>
+        <tbody id="inventario-body"></tbody>
+    </table>
+
+    <!-- Modal para mostrar detalles del dispositivo -->
+    <div id="modal" class="modal">
+        <div class="modal-contenido">
+            <span class="cerrar" onclick="cerrarModal()">&times;</span>
+            <h2>Detalles del Dispositivo</h2>
+            <div id="detalles-dispositivo"></div>
+        </div>
+    </div>
+</body>
+</html>
