@@ -14,7 +14,8 @@ function configurarFiltrosDesplegables() {
     });
 }
 
-/* 🔹 Cargar inventario basado en filtros seleccionados */function cargarInventario() {
+/* 🔹 Cargar inventario basado en filtros seleccionados */
+function cargarInventario() {
     // Obtener los valores seleccionados para cada filtro
     let ubicaciones = [...document.getElementById("ubicacion").selectedOptions].map(opt => opt.value);
     let tipos = [...document.querySelectorAll("input[name='tipo']:checked")].map(input => input.value);
@@ -44,24 +45,42 @@ function configurarFiltrosDesplegables() {
         .catch(error => console.error("⚠ Error al cargar inventario:", error));
 }
 
-
 function buscarPorIP() {
-    let ip = `${document.getElementById('ip1').value}.${document.getElementById('ip2').value}.${document.getElementById('ip3').value}.${document.getElementById('ip4').value}`;
+    // Obtener los valores de los campos de la IP
+    let ip1 = document.getElementById('ip1').value;
+    let ip2 = document.getElementById('ip2').value;
+    let ip3 = document.getElementById('ip3').value;
+    let ip4 = document.getElementById('ip4').value;
+
+    // Verifica si los campos están vacíos
+    if (!ip1 || !ip2 || !ip3 || !ip4) {
+        alert("⚠ Todos los campos de IP deben ser completados.");
+        return;
+    }
+
+    // Generar la IP concatenando los valores
+    let ip = `${ip1}.${ip2}.${ip3}.${ip4}`;
     
+    console.log("IP generada:", ip);  // Verifica si la IP se genera correctamente
+
+    // Validar la IP
     if (!validarIPv4(ip)) {
         alert("⚠ IP inválida. Verifique los valores ingresados.");
         return;
     }
 
+    // Crear la URL para la solicitud con la IP
     let url = `/monitoreo/inventario/?ip=${encodeURIComponent(ip)}`;
+    
+    console.log("🔍 URL generada:", url);  // Verifica que la URL es correcta
 
-    console.log("🔍 Buscando IP:", ip);  // 👈 Verifica en la consola
-
+    // Realizar la solicitud
     fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" } })
         .then(response => response.json())
         .then(data => actualizarTabla(data))
         .catch(error => console.error("⚠ Error al buscar IP:", error));
 }
+
 
 
 // 🔹 Función para validar IP
@@ -228,17 +247,6 @@ function soloNumeros(event) {
     }
 }
 
-// 🔹 Convierte los valores de los campos en una IP válida y realiza la búsqueda
-function buscarPorIP() {
-    let ip = `${document.getElementById('ip1').value}.${document.getElementById('ip2').value}.${document.getElementById('ip3').value}.${document.getElementById('ip4').value}`;
-    
-    if (validarIPv4(ip)) {
-        console.log("Buscando IP:", ip);
-        cargarInventario(ip);
-    } else {
-        alert("⚠ IP inválida. Verifique los valores ingresados.");
-    }
-}
 
 // 🔹 Valida si la IP ingresada es correcta (cada número entre 0 y 255)
 function validarIPv4(ip) {
