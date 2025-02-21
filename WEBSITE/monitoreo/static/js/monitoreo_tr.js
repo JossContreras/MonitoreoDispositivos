@@ -1,77 +1,134 @@
 document.addEventListener("DOMContentLoaded", function() {
-    asignarEventosBotones(); // ✅ Asigna eventos al cargar la página
+    asignarEventosBotones();
+    configurarFiltrosDesplegables();
 });
 
-function cargarInventario() {
+/* 🔹 Mostrar/Ocultar filtros desplegables */
+function configurarFiltrosDesplegables() {
+    document.querySelectorAll(".toggle-btn").forEach(button => {
+        button.addEventListener("click", function() {
+            let contenido = this.nextElementSibling;
+            contenido.style.display = contenido.style.display === "none" || contenido.style.display === "" ? "block" : "none";
+            this.innerText = contenido.style.display === "block" ? "🔼 Ocultar Filtros" : "🔽 Mostrar Filtros";
+        });
+    });
+}
+
+/* 🔹 Cargar inventario basado en filtros seleccionados */function cargarInventario() {
+    // Obtener los valores seleccionados para cada filtro
     let ubicaciones = [...document.getElementById("ubicacion").selectedOptions].map(opt => opt.value);
-    let ipBusqueda = document.getElementById("buscar-ip").value.trim();
     let tipos = [...document.querySelectorAll("input[name='tipo']:checked")].map(input => input.value);
     let marcas = [...document.querySelectorAll("input[name='marca']:checked")].map(input => input.value);
     let sistemas = [...document.querySelectorAll("input[name='sistema']:checked")].map(input => input.value);
 
+    // Construir la URL con los filtros seleccionados
     let url = "/monitoreo/inventario/?";
-    if (ipBusqueda) url += `ip=${encodeURIComponent(ipBusqueda)}`;
-    if (ubicaciones.length) url += `&ubicacion[]=${ubicaciones.join("&ubicacion[]=")}`;
-    if (tipos.length) url += `&tipo[]=${tipos.join("&tipo[]=")}`;
-    if (marcas.length) url += `&marca[]=${marcas.join("&marca[]=")}`;
-    if (sistemas.length) url += `&sistema[]=${sistemas.join("&sistema[]=")}`;
+    
+    // Añadir cada filtro a la URL si tiene elementos seleccionados
+    if (ubicaciones.length) url += `ubicacion[]=${ubicaciones.join("&ubicacion[]=")}&`;
+    if (tipos.length) url += `tipo[]=${tipos.join("&tipo[]=")}&`;
+    if (marcas.length) url += `marca[]=${marcas.join("&marca[]=")}&`;
+    if (sistemas.length) url += `sistema[]=${sistemas.join("&sistema[]=")}&`;
 
-    fetch(url, {
-        headers: { "X-Requested-With": "XMLHttpRequest" }
-    })
-    .then(response => response.json())
-    .then(data => actualizarTabla(data))
-    .catch(error => console.error("Error al cargar inventario:", error));
+    // Eliminar el último '&' si existe
+    if (url.endsWith('&')) {
+        url = url.slice(0, -1);
+    }
+
+    console.log("🔍 URL generada:", url);  // Verifica en la consola del navegador
+
+    // Hacer la petición con los filtros aplicados
+    fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" } })
+        .then(response => response.json())
+        .then(data => actualizarTabla(data))  // Pasar los datos a la función que actualiza la tabla
+        .catch(error => console.error("⚠ Error al cargar inventario:", error));
 }
 
+
+function buscarPorIP() {
+    let ip = `${document.getElementById('ip1').value}.${document.getElementById('ip2').value}.${document.getElementById('ip3').value}.${document.getElementById('ip4').value}`;
+    
+    if (!validarIPv4(ip)) {
+        alert("⚠ IP inválida. Verifique los valores ingresados.");
+        return;
+    }
+
+    let url = `/monitoreo/inventario/?ip=${encodeURIComponent(ip)}`;
+
+    console.log("🔍 Buscando IP:", ip);  // 👈 Verifica en la consola
+
+    fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" } })
+        .then(response => response.json())
+        .then(data => actualizarTabla(data))
+        .catch(error => console.error("⚠ Error al buscar IP:", error));
+}
+
+
+// 🔹 Función para validar IP
+function validarIPv4(ip) {
+    let partes = ip.split('.');
+    return partes.length === 4 && partes.every(num => num !== "" && !isNaN(num) && parseInt(num) >= 0 && parseInt(num) <= 255);
+}
+
+
+/* 🔹 Actualizar la tabla con nuevos datos */
 function actualizarTabla(data) {
+    console.log(data); // Verifica cómo están llegando los datos
+
     let tabla = document.getElementById("inventario-body");
-    tabla.innerHTML = "";
+    if (!tabla) {
+        console.error("⚠ Error: No se encontró el elemento #inventario-body en el DOM.");
+        return;
+    }
+
+    tabla.innerHTML = ""; // Limpiar la tabla antes de actualizar
+
     if (data.length === 0) {
-        tabla.innerHTML = `<tr><td colspan="10">No hay elementos en el inventario.</td></tr>`;
+        tabla.innerHTML = `<tr><td colspan="6">No hay elementos en el inventario.</td></tr>`;
         return;
     }
 
     data.forEach(item => {
-        let fila = `<tr>
-            <td>${item.id_inventario}</td>
-            <td>${item.nombre}</td>
-            <td>${item.ubicacion}</td>
-            <td>${item.ip}</td>
+        console.log(item); // Verifica cómo está estructurado cada 'item'
+
+        let fila = document.createElement("tr");
+
+        fila.innerHTML = `
+            <td>${item.ubicacion || "No disponible"}</td>
+            <td>${item.ip || "No disponible"}</td>
             <td>${item.tipo_elemento || "No especificado"}</td>
-            <td>${item.marca || "No disponible"}</td>
-            <td>${item.sistema_operativo || "No disponible"}</td>
             <td id="estado-${item.id_inventario}">⏳ Esperando...</td>
             <td><button class="btn-ping" data-ip="${item.ip}" data-id="${item.id_inventario}">Verificar Estado</button></td>
             <td><button class="btn-detalles"
                 data-id="${item.id_inventario}"
-                data-nombre="${item.nombre}"
-                data-ubicacion="${item.ubicacion}"
+                data-nombre="${item.nombre || 'No disponible'}"
+                data-ubicacion="${item.ubicacion || 'No disponible'}"
                 data-ip="${item.ip || 'No disponible'}"
                 data-tipo="${item.tipo_elemento || 'No especificado'}"
-                data-marca="${item.marca || 'No disponible'}"
-                data-sistema="${item.sistema_operativo || 'No disponible'}"
                 data-estado="${item.estado || 'Desconocido'}"
                 data-fecha="${item.fecha_adquisicion || 'No disponible'}">
                 Ver Detalles
             </button></td>
-        </tr>`;
+        `;
 
-        tabla.innerHTML += fila;
+        tabla.appendChild(fila);
     });
 
-    asignarEventosBotones(); // ✅ Asigna eventos después de actualizar la tabla
+    asignarEventosBotones(); // Asegúrate de volver a asignar los eventos después de actualizar la tabla
 }
 
+
+
+
+
+/* 🔹 Asignar eventos a los botones después de actualizar la tabla */
 function asignarEventosBotones() {
-    // 🟢 Asignar eventos a "Verificar Estado"
     document.querySelectorAll(".btn-ping").forEach(button => {
         button.addEventListener("click", function() {
             verificarEstado(this.dataset.ip, this.dataset.id);
         });
     });
 
-    // 🟢 Asignar eventos a "Ver Detalles"
     document.querySelectorAll(".btn-detalles").forEach(button => {
         button.addEventListener("click", function() {
             mostrarDetalles(
@@ -89,6 +146,7 @@ function asignarEventosBotones() {
     });
 }
 
+/* 🔹 Verificar el estado de todos los dispositivos con IP */
 function verificarTodos() {
     let botones = document.querySelectorAll(".btn-ping");
     if (botones.length === 0) {
@@ -105,9 +163,10 @@ function verificarTodos() {
     });
 }
 
+/* 🔹 Verificar el estado de un solo dispositivo */
 function verificarEstado(ip, id) {
     if (!ip) {
-        document.getElementById(`estado-${id}`).innerText = "⚠ Error: IP no válida";
+        document.getElementById(`estado-${id}`).innerText = "⚠ IP no válida";
         return;
     }
 
@@ -115,22 +174,7 @@ function verificarEstado(ip, id) {
         .then(response => response.json())
         .then(data => {
             let estado = document.getElementById(`estado-${id}`);
-            if (data.estado === "exito") {
-                estado.innerText = `✅ Activo (${data.tiempo})`;
-            } else {
-                let mensajeError = data.motivo;
-
-                // 🔹 Acortar mensaje de error
-                if (mensajeError.includes("Host de destino inaccesible")) {
-                    mensajeError = "Host inaccesible";
-                } else if (mensajeError.includes("100% perdidos")) {
-                    mensajeError = "100% pérdida";
-                } else {
-                    mensajeError = "No responde";
-                }
-
-                estado.innerText = `❌ Inactivo (${mensajeError})`;
-            }
+            estado.innerText = data.estado === "exito" ? `✅ Activo (${data.tiempo})` : `❌ Inactivo (No responde)`;
         })
         .catch(error => {
             console.error("Error al hacer ping:", error);
@@ -138,6 +182,7 @@ function verificarEstado(ip, id) {
         });
 }
 
+/* 🔹 Mostrar detalles del dispositivo en un modal */
 function mostrarDetalles(id, nombre, ubicacion, ip, tipo, marca, sistema, estado, fecha) {
     let detalles = `
         <p><strong>ID:</strong> ${id}</p>
@@ -154,25 +199,55 @@ function mostrarDetalles(id, nombre, ubicacion, ip, tipo, marca, sistema, estado
     document.getElementById("modal").style.display = "block";
 }
 
+/* 🔹 Cerrar modal */
 function cerrarModal() {
     document.getElementById("modal").style.display = "none";
 }
 
+/* 🔹 Eliminar filtros sin recargar */
 function eliminarFiltros() {
-    // 🔹 Deseleccionar todas las opciones en "Ubicación"
-    let ubicacionSelect = document.getElementById("ubicacion");
-    for (let option of ubicacionSelect.options) {
-        option.selected = false;
+    document.querySelectorAll("input, select").forEach(input => {
+        if (input.type === "checkbox") input.checked = false;
+        else input.value = "";
+    });
+}
+
+
+// 🔹 Mueve automáticamente el cursor al siguiente campo al escribir 3 dígitos
+function moverCursor(input, siguiente) {
+    if (input.value.length === 3) {
+        document.getElementById(siguiente).focus();
     }
+}
 
-    // 🔹 Desmarcar todas las casillas de verificación (tipo, marca, sistema operativo)
-    document.querySelectorAll("input[name='tipo']:checked").forEach(input => input.checked = false);
-    document.querySelectorAll("input[name='marca']:checked").forEach(input => input.checked = false);
-    document.querySelectorAll("input[name='sistema']:checked").forEach(input => input.checked = false);
+// 🔹 Solo permite números del 0 al 9 en los campos de la IP
+function soloNumeros(event) {
+    let char = String.fromCharCode(event.which);
+    if (!/^[0-9]$/.test(char)) {
+        event.preventDefault();
+    }
+}
 
-    // 🔹 Vaciar el campo de búsqueda de IP
-    document.getElementById("buscar-ip").value = "";
+// 🔹 Convierte los valores de los campos en una IP válida y realiza la búsqueda
+function buscarPorIP() {
+    let ip = `${document.getElementById('ip1').value}.${document.getElementById('ip2').value}.${document.getElementById('ip3').value}.${document.getElementById('ip4').value}`;
+    
+    if (validarIPv4(ip)) {
+        console.log("Buscando IP:", ip);
+        cargarInventario(ip);
+    } else {
+        alert("⚠ IP inválida. Verifique los valores ingresados.");
+    }
+}
 
-    // ✅ No llamamos a cargarInventario() automáticamente, solo limpiamos los campos
-    console.log("Filtros limpiados. Esperando acción del usuario.");
+// 🔹 Valida si la IP ingresada es correcta (cada número entre 0 y 255)
+function validarIPv4(ip) {
+    let partes = ip.split('.');
+    return partes.length === 4 && partes.every(num => num !== "" && !isNaN(num) && parseInt(num) >= 0 && parseInt(num) <= 255);
+}
+
+// ✅ Función para mostrar/ocultar las tarjetas desplegables
+function toggleFiltro(id) {
+    let contenido = document.getElementById(id);
+    contenido.classList.toggle('mostrar');
 }

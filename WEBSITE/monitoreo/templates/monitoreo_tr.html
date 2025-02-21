@@ -9,70 +9,95 @@
     <script src="{% static 'js/monitoreo_tr.js' %}" defer></script>
 </head>
 <body>
-    <h1>Inventario por Ubicación</h1>
+    <div class="container">
+        <h1>Inventario por Ubicación</h1>
 
-    <label>Ubicación:</label>
-    <select id="ubicacion" multiple>
-        {% for ubicacion in ubicaciones %}
-            <option value="{{ ubicacion.id_ubicacion }}">{{ ubicacion.nombre_ubicacion }}</option>
-        {% endfor %}
-    </select>
+        <!-- 🔹 Tarjeta de Filtros (Desplegable) -->
+        <div class="card filtros-card">
+            <!-- Botón para mostrar/ocultar filtros -->
+            <button class="toggle-btn" onclick="toggleFiltro('filtros-seccion')">📂 Filtros de Búsqueda</button>
+            
+            <!-- Contenido de filtros (inicialmente oculto) -->
+            <div id="filtros-seccion" class="contenido" style="display: none;">
+                <!-- Filtro de ubicación -->
+                <label for="ubicacion">Ubicación:</label>
+                <select id="ubicacion" multiple>
+                    {% for ubicacion in ubicaciones %}
+                        <option value="{{ ubicacion.id_ubicacion }}">{{ ubicacion.nombre_ubicacion }}</option>
+                    {% endfor %}
+                </select>
+        
+                <!-- Filtro de tipo de dispositivo -->
+                <fieldset>
+                    <legend>Tipo de Dispositivo:</legend>
+                    {% for tipo in tipos %}
+                        <label><input type="checkbox" name="tipo" value="{{ tipo }}"> {{ tipo }}</label>
+                    {% endfor %}
+                </fieldset>
+        
+                <!-- Filtro de marca -->
+                <fieldset>
+                    <legend>Marca:</legend>
+                    {% for marca in marcas %}
+                        <label><input type="checkbox" name="marca" value="{{ marca }}"> {{ marca }}</label>
+                    {% endfor %}
+                </fieldset>
+        
+                <!-- Filtro de sistema operativo -->
+                <fieldset>
+                    <legend>Sistema Operativo:</legend>
+                    {% for sistema in sistemas %}
+                        <label><input type="checkbox" name="sistema" value="{{ sistema }}"> {{ sistema }}</label>
+                    {% endfor %}
+                </fieldset>
+        
+                <!-- Botón para aplicar los filtros -->
+                <button type="button" onclick="cargarInventario()" id="buscar-filtros-btn">🔍 Buscar por filtros</button>
+            </div>
+        </div>
+        
 
-    <!-- Botón para eliminar filtros -->
-<button onclick="eliminarFiltros()">Eliminar Filtros</button>
+        <!-- 🔹 Tarjeta de Búsqueda por IP (Desplegable) --><div class="card ip-card">
+    <button class="toggle-btn" onclick="toggleFiltro('ip-seccion')">🌐 Buscar por IP</button>
+    <div id="ip-seccion" class="contenido" style="display: none;">
+        <div class="ip-input-container">
+            <div class="ip-input">
+                <input type="text" id="ip1" maxlength="3" oninput="moverCursor(this, 'ip2')" onkeypress="return soloNumeros(event)">
+                <span>.</span>
+                <input type="text" id="ip2" maxlength="3" oninput="moverCursor(this, 'ip3')" onkeypress="return soloNumeros(event)">
+                <span>.</span>
+                <input type="text" id="ip3" maxlength="3" oninput="moverCursor(this, 'ip4')" onkeypress="return soloNumeros(event)">
+                <span>.</span>
+                <input type="text" id="ip4" maxlength="3" onkeypress="return soloNumeros(event)">
+            </div>
+            <button id="buscar-ip-btn" onclick="buscarPorIP()">🔍</button>
+        </div>
+    </div>
+</div>
 
 
-    <fieldset>
-        <legend>Tipo de Dispositivo:</legend>
-        {% for tipo in tipos %}
-            <label><input type="checkbox" name="tipo" value="{{ tipo }}"> {{ tipo }}</label>
-        {% endfor %}
-    </fieldset>
+        <!-- 🔹 Botones Generales -->
+        <div class="botones">
+            <button id="verificar-todos" onclick="verificarTodos()">✅ Verificar Todos</button>
+            <button id="eliminar-btn" onclick="eliminarFiltros()">❌ Borrar Filtros</button>
+        </div>
 
-    <fieldset>
-        <legend>Marca:</legend>
-        {% for marca in marcas %}
-            <label><input type="checkbox" name="marca" value="{{ marca }}"> {{ marca }}</label>
-        {% endfor %}
-    </fieldset>
-
-    <fieldset>
-        <legend>Sistema Operativo:</legend>
-        {% for sistema in sistemas %}
-            <label><input type="checkbox" name="sistema" value="{{ sistema }}"> {{ sistema }}</label>
-        {% endfor %}
-    </fieldset>
-
-    <button onclick="verificarTodos()">Verificar Todos los Dispositivos</button>
-
-    <label for="buscar-ip">Buscar por IP:</label>
-    <input type="text" id="buscar-ip" placeholder="Ingrese una IP">
-    <button onclick="cargarInventario()">Buscar</button>
-
-    <table border="1">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Ubicación</th>
-                <th>IP</th>
-                <th>Tipo</th>
-                <th>Marca</th>
-                <th>Sistema Operativo</th>
-                <th>Estado</th>
-                <th>Acción</th>
-                <th>Detalles</th>
-            </tr>
-        </thead>
-        <tbody id="inventario-body"></tbody>
-    </table>
-
-    <!-- Modal para mostrar detalles del dispositivo -->
-    <div id="modal" class="modal">
-        <div class="modal-contenido">
-            <span class="cerrar" onclick="cerrarModal()">&times;</span>
-            <h2>Detalles del Dispositivo</h2>
-            <div id="detalles-dispositivo"></div>
+        <!-- 🔹 Tabla de Inventario -->
+        <div class="tabla-contenedor">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ubicación</th>
+                        <th>IP</th>
+                        <th>Tipo</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
+                        <th>Detalles</th>
+                    </tr>
+                </thead>
+                <tbody id="inventario-body"></tbody>
+            </table>
+            
         </div>
     </div>
 </body>
