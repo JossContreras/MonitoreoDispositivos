@@ -81,14 +81,11 @@ function buscarPorIP() {
         .catch(error => console.error("⚠ Error al buscar IP:", error));
 }
 
-
-
 // 🔹 Función para validar IP
 function validarIPv4(ip) {
     let partes = ip.split('.');
     return partes.length === 4 && partes.every(num => num !== "" && !isNaN(num) && parseInt(num) >= 0 && parseInt(num) <= 255);
 }
-
 
 /* 🔹 Actualizar la tabla con nuevos datos */
 function actualizarTabla(data) {
@@ -135,10 +132,6 @@ function actualizarTabla(data) {
 
     asignarEventosBotones(); // Asegúrate de volver a asignar los eventos después de actualizar la tabla
 }
-
-
-
-
 
 /* 🔹 Asignar eventos a los botones después de actualizar la tabla */
 function asignarEventosBotones() {
@@ -231,7 +224,6 @@ function eliminarFiltros() {
     });
 }
 
-
 // 🔹 Mueve automáticamente el cursor al siguiente campo al escribir 3 dígitos
 function moverCursor(input, siguiente) {
     if (input.value.length === 3) {
@@ -246,7 +238,6 @@ function soloNumeros(event) {
         event.preventDefault();
     }
 }
-
 
 // 🔹 Valida si la IP ingresada es correcta (cada número entre 0 y 255)
 function validarIPv4(ip) {
