@@ -198,25 +198,56 @@ INSERT INTO Ubicacion_Dependencia (id_ubicacion, id_dependencia) VALUES
 (3, 2);
 
 INSERT INTO Inventario (nombre, tipo_elemento, estado, fecha_adquisicion, id_ubicacion, ip) VALUES
-('Router Principal', 'Router', 'Activo', '2022-10-10', 1, '192.168.1.1'),
-('Mi PC', 'PC', 'Activo', '2023-06-01', 2, '192.168.1.5'),
-('Mi Teléfono', 'Smartphone', 'Activo', '2023-06-01', 3, '2806:264:3480:964e:ca5:631b:3693:a9e5');
+('Router Principal', 'Router', 'Activo', '2022-10-10', 1, '192.168.1.1');
 
 INSERT INTO Detalles_Tecnicos (id_inventario, marca, modelo, numero_serie, sistema_operativo, version_firmware) VALUES
-(1, 'TP-Link', 'Archer AX50', 'SN12345678', 'Firmware', '1.2.3'),
-(2, 'Dell', 'Inspiron 15', 'SN87654321', 'Windows 11', '22H2'),
-(3, 'Samsung', 'Galaxy S22', 'SN99887766', 'Android', '13.0');
+(1, 'TP-Link', 'Archer AX50', 'SN12345678', 'Firmware', '1.2.3');
 
 INSERT INTO Historial_cambios (id_inventario, fecha_cambio, cambio_realizado, realizado_por) VALUES
-(1, '2024-01-28', 'Actualización de firmware del router', 'Carlos Pérez'),
-(2, '2024-02-10', 'Cambio de configuración de red en PC', 'Ana Gómez');
+(1, '2024-01-28', 'Actualización de firmware del router', 'Carlos Pérez');
 
 INSERT INTO Configuracion (id_inventario, descripcion, parametros_personalizados, ultima_actualizacion) VALUES
-(1, 'Configuración del router principal', 'SSID: MiWiFi, Seguridad: WPA2, DHCP: Habilitado', '2024-02-19'),
-(2, 'Configuración de red de la PC', 'IP estática: 192.168.1.5, Gateway: 192.168.1.1, DNS: 8.8.8.8', '2024-02-19'),
-(3, 'Configuración del smartphone', 'Conectado a MiWiFi, IP asignada por DHCP', '2024-02-19');
+(1, 'Configuración del router principal', 'SSID: MiWiFi, Seguridad: WPA2, DHCP: Habilitado', '2024-02-19');
 
 INSERT INTO Enlaces (dispositivo_origen, dispositivo_destino, estado) VALUES
-(1, 2, 'Activo'),  -- Router Principal <-> Mi PC
-(1, 3, 'Activo'),  -- Router Principal <-> Mi Teléfono
-(2, 3, 'Activo');  -- Mi PC <-> Mi Teléfono
+(1, 2, 'Activo');  -- Router Principal <-> Mi PC
+
+--------------------------------------------------------------------------------------------------------------------------
+
+
+INSERT INTO Inventario (nombre, tipo_elemento, estado, fecha_adquisicion, id_ubicacion, ip) VALUES
+('Laptop', 'Computadora', 'Activo', '2022-10-10', 1, '192.168.1.61');
+
+INSERT INTO Detalles_Tecnicos (id_inventario, marca, modelo, numero_serie, sistema_operativo, version_firmware) VALUES
+(2, 'TP-Link', 'Archer AX50', 'SN12345678', 'Firmware', '1.2.3');
+
+INSERT INTO Historial_cambios (id_inventario, fecha_cambio, cambio_realizado, realizado_por) VALUES
+(2, '2024-01-28', 'Actualización de firmware del router', 'Carlos Pérez');
+
+INSERT INTO Configuracion (id_inventario, descripcion, parametros_personalizados, ultima_actualizacion) VALUES
+(2, 'Configuración del router principal', 'SSID: MiWiFi, Seguridad: WPA2, DHCP: Habilitado', '2024-02-19');
+
+--------------------------------------------------------------------------------------------------------------------------
+
+INSERT INTO Inventario (nombre, tipo_elemento, estado, fecha_adquisicion, id_ubicacion, ip) VALUES
+('Pixel 6 pro', 'Smartphone', 'Activo', '2022-10-10', 1, '192.168.1.3');
+
+INSERT INTO Detalles_Tecnicos (id_inventario, marca, modelo, numero_serie, sistema_operativo, version_firmware) VALUES
+(3, 'Pixel', 'Archer AX50', 'SN12345678', 'Firmware', '1.2.3');
+
+INSERT INTO Configuracion (id_inventario, descripcion, parametros_personalizados, ultima_actualizacion) VALUES
+(3, 'Configuración del router principal', 'SSID: MiWiFi, Seguridad: WPA2, DHCP: Habilitado', '2024-02-19');
+
+--------------------------------------------------------------------------------------------------------------------------
+
+INSERT INTO Inventario (nombre, tipo_elemento, estado, fecha_adquisicion, id_ubicacion, ip) VALUES
+('PC Pavilion Gaming 15', 'Computadora', 'Activo', '2022-10-10', 1, '192.168.1.5');
+
+INSERT INTO Detalles_Tecnicos (id_inventario, marca, modelo, numero_serie, sistema_operativo, version_firmware) VALUES
+(4, 'HP', 'Archer AX50', 'SN12345678', 'Firmware', '1.2.3');
+
+INSERT INTO Configuracion (id_inventario, descripcion, parametros_personalizados, ultima_actualizacion) VALUES
+(4, 'Configuración del router principal', 'SSID: MiWiFi, Seguridad: WPA2, DHCP: Habilitado', '2024-02-19');
+
+INSERT INTO Enlaces (dispositivo_origen, dispositivo_destino, estado) VALUES
+(1, 4, 'Activo');  -- Router Principal <-> Mi PC

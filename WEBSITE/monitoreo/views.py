@@ -113,44 +113,65 @@ def obtener_dispositivos_enlazados(id_inventario):
 
     return [(id_disp, convertir_ipv6_a_ipv4(ip)) for id_disp, ip in dispositivos if ip and ip.count('.') == 3]
 
+from collections import deque
+from collections import deque
+
 def analizar_ruta(request):
     if request.method == "POST":
         ip_origen = request.POST.get("ip_origen")
         ip_destino = request.POST.get("ip_destino")
 
-        ruta = []
-        visitados = set()
+        id_origen = obtener_id_por_ip(ip_origen)
+        id_destino = obtener_id_por_ip(ip_destino)
 
-        def recorrer_red(ip_actual):
+        print("ID Origen:", id_origen)
+        print("ID Destino:", id_destino)
+
+        if not id_origen or not id_destino:
+            return render(request, "index.html", {"ruta": [], "error": "No se encontraron los dispositivos."})
+
+        # Paso 1: Encontrar la ruta más corta usando BFS (sin hacer ping todavía)
+        visitados = set()
+        cola = deque([(ip_origen, [])])  # Cola para BFS: (IP actual, camino hasta aquí)
+        ruta_mas_corta = []
+
+        while cola:
+            ip_actual, camino_actual = cola.popleft()
+
             if ip_actual in visitados:
-                return False
+                continue
             visitados.add(ip_actual)
 
-            id_actual = obtener_id_por_ip(ip_actual)
-            if not id_actual:
-                return False
-
-            resultado_ping = hacer_ping(ip_actual)
-            ruta.append(resultado_ping)  # incluye el tiempo y el ping
-
-            if resultado_ping["estado"] == "error":
-                return False  # Si hay error, se detiene el monitoreo
+            nuevo_camino = camino_actual + [ip_actual]
 
             if ip_actual == ip_destino:
-                return True
+                ruta_mas_corta = nuevo_camino
+                break
 
-            dispositivos = obtener_dispositivos_enlazados(id_actual)
+            dispositivos = obtener_dispositivos_enlazados(obtener_id_por_ip(ip_actual))
+            print("Dispositivos enlazados de", ip_actual, ":", dispositivos)
+
             for _, ip_conectado in dispositivos:
-                if recorrer_red(ip_conectado):
-                    return True
+                if ip_conectado not in visitados:
+                    cola.append((ip_conectado, nuevo_camino))
 
-            return False
+        if not ruta_mas_corta:
+            print("No se encontró una ruta.")
+            return render(request, "index.html", {"ruta": [], "error": "No hay conexión entre los dispositivos."})
 
-        recorrer_red(ip_origen)
+        print("Ruta más corta encontrada:", ruta_mas_corta)
 
-        return render(request, "index.html", {"ruta": ruta})
+        # Paso 2: Hacer ping solo a los dispositivos de la ruta más corta
+        ruta_con_ping = []
+        for ip in ruta_mas_corta:
+            resultado_ping = hacer_ping(ip)
+            ruta_con_ping.append(resultado_ping)
+
+        return render(request, "index.html", {"ruta": ruta_con_ping})
 
     return render(request, "index.html", {"ruta": []})
+
+
  #=========================================================================================================
 from django.shortcuts import render
 from django.http import JsonResponse
