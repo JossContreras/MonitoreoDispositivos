@@ -5,92 +5,156 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitoreo de Red</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    
-    <script>
-        function obtenerMiIP() {
-            fetch("https://api4.ipify.org?format=json")
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("ip_origen").value = data.ip;
-                })
-                .catch(error => console.error("Error obteniendo la IP:", error));
-        }
-    
-        function mostrarCarga() {
-            let barraCarga = document.getElementById("barra-carga");
-            let botonAnalizar = document.getElementById("analizar-btn");
-            let resultados = document.getElementById("resultados");
-    
-            if (barraCarga) barraCarga.classList.remove("d-none");
-            if (botonAnalizar) botonAnalizar.disabled = true;
-            if (resultados) resultados.innerHTML = ""; // Borra resultados previos
-        }
-    
-        document.addEventListener("DOMContentLoaded", function () {
-            let elementos = document.querySelectorAll(".fade-in");
-            elementos.forEach((el, i) => {
-                setTimeout(() => {
-                    el.style.opacity = 1;
-                    el.style.transform = "translateY(0px)";
-                }, i * 500);
-            });
-        });
-    </script>
-    
 
     <style>
+        /* Diseño general */
+        body {
+            background-color: #f4f6f9;
+            font-size: clamp(14px, 1.5vw, 18px); /* Texto adaptable */
+        }
+
+        .container {
+            max-width: 800px;
+            margin-top: 50px;
+        }
+
+        .card {
+            border-radius: 15px;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            background-color: white;
+        }
+
+        h1 {
+            font-size: clamp(22px, 4vw, 36px); /* Se adapta */
+            text-align: center;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        label {
+            font-size: clamp(14px, 1.2vw, 16px);
+            font-weight: bold;
+            color: #555;
+        }
+
+        /* Botón más atractivo */
+        .btn-custom {
+            font-size: clamp(14px, 1.5vw, 18px);
+            font-weight: bold;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            transition: background 0.3s;
+        }
+
+        .btn-custom:hover {
+            background-color: #218838;
+        }
+
+        /* Animaciones */
         .fade-in {
             opacity: 0;
             transform: translateY(-10px);
             transition: opacity 0.5s ease-out, transform 0.5s ease-out;
         }
+
+        .animated-list .list-group-item {
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+        }
     </style>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById("form-analizar").addEventListener("submit", function (event) {
+                event.preventDefault(); // Evita la recarga
+
+                let formData = new FormData(this);
+                let botonAnalizar = document.getElementById("analizar-btn");
+                let barraCarga = document.getElementById("barra-carga");
+                let resultados = document.getElementById("resultados");
+
+                botonAnalizar.disabled = true;
+                barraCarga.classList.remove("d-none");
+                resultados.innerHTML = ""; // Limpia resultados anteriores
+
+                fetch("{% url 'analizar_ruta' %}", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    barraCarga.classList.add("d-none");
+                    botonAnalizar.disabled = false;
+
+                    if (data.error) {
+                        resultados.innerHTML = `<p class="text-danger fade-in">${data.error}</p>`;
+                        setTimeout(() => {
+                            document.querySelector(".text-danger").style.opacity = 1;
+                        }, 300);
+                    } else {
+                        let lista = "";
+                        data.ruta.forEach((item, i) => {
+                            let clase = item.estado === "exito" ? "text-success" : "text-danger";
+                            let icono = item.estado === "exito" ? "✔" : "❌";
+                            lista += `<li class="list-group-item ${clase} fade-in">${icono} ${item.ip} - ⏱ ${item.tiempo || 'N/A'}</li>`;
+                        });
+
+                        resultados.innerHTML = lista;
+
+                        // Aparece uno por uno con retraso
+                        let items = document.querySelectorAll(".fade-in");
+                        items.forEach((el, i) => {
+                            setTimeout(() => {
+                                el.style.opacity = 1;
+                                el.style.transform = "translateY(0px)";
+                            }, i * 300);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error("Error en la solicitud:", error);
+                    resultados.innerHTML = `<p class="text-danger fade-in">Hubo un error al procesar el análisis.</p>`;
+                    setTimeout(() => {
+                        document.querySelector(".text-danger").style.opacity = 1;
+                    }, 300);
+                    barraCarga.classList.add("d-none");
+                    botonAnalizar.disabled = false;
+                });
+            });
+        });
+    </script>
 </head>
-<body class="container mt-4">
-    <h1 class="text-center">Monitoreo de Red</h1>
+<body>
+    <div class="container">
+        <h1>🔍 Monitoreo de Red</h1>
 
-    <form method="POST" onsubmit="mostrarCarga()">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label for="ip_origen" class="form-label">IP Origen:</label>
-            <div class="input-group">
-                <input type="text" id="ip_origen" name="ip_origen" class="form-control" required>
-                <button type="button" class="btn btn-primary" onclick="obtenerMiIP()">Mi IP</button>
-            </div>
+        <div class="card">
+            <form id="form-analizar">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="ip_origen" class="form-label">IP Origen:</label>
+                    <input type="text" id="ip_origen" name="ip_origen" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="ip_destino" class="form-label">IP Destino:</label>
+                    <input type="text" name="ip_destino" class="form-control" required>
+                </div>
+                <button type="submit" id="analizar-btn" class="btn btn-custom w-100">🚀 Analizar</button>
+
+                <!-- Barra de carga -->
+                <div id="barra-carga" class="progress mt-3 d-none">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+                </div>
+            </form>
         </div>
 
-        <div class="mb-3">
-            <label for="ip_destino" class="form-label">IP Destino:</label>
-            <input type="text" name="ip_destino" class="form-control" required>
-        </div>
-
-        <button type="submit" id="analizar-btn" class="btn btn-success w-100">Analizar</button>
-
-        <!-- Barra de carga -->
-        <div id="barra-carga" class="progress mt-3 d-none">
-            <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                 role="progressbar" style="width: 100%"></div>
-        </div>
-    </form>
-
-    {% if ruta %}
-        <h2 class="mt-4">Ruta Calculada:</h2>
-        <ul class="list-group" id="resultados">
-            {% for item in ruta %}
-                {% if item.estado == "exito" %}
-                    <li class="list-group-item text-success fade-in">
-                        ✔ Ping exitoso: <strong>{{ item.ip }}</strong> - ⏱ <strong>{{ item.tiempo }}</strong>
-                    </li>
-                {% elif item.estado == "error" %}
-                    <li class="list-group-item text-danger fade-in">
-                        ❌ Error en <strong>{{ item.ip }}</strong> - <em>{{ item.motivo }}</em>
-                    </li>
-                {% endif %}
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p class="mt-3 text-danger">N.</p>
-    {% endif %}
+        <!-- Resultados -->
+        <h2 class="mt-4 text-center">📡 Ruta Calculada:</h2>
+        <ul class="list-group animated-list" id="resultados"></ul>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

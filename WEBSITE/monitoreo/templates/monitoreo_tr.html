@@ -1,4 +1,5 @@
 {% load static %}
+{% include 'mon_red.html' %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -28,28 +29,22 @@
                 </select>
         
                 <!-- Filtro de tipo de dispositivo -->
-                <fieldset>
                     <legend>Tipo de Dispositivo:</legend>
                     {% for tipo in tipos %}
                         <label><input type="checkbox" name="tipo" value="{{ tipo }}"> {{ tipo }}</label>
                     {% endfor %}
-                </fieldset>
         
                 <!-- Filtro de marca -->
-                <fieldset>
                     <legend>Marca:</legend>
                     {% for marca in marcas %}
                         <label><input type="checkbox" name="marca" value="{{ marca }}"> {{ marca }}</label>
                     {% endfor %}
-                </fieldset>
         
                 <!-- Filtro de sistema operativo -->
-                <fieldset>
                     <legend>Sistema Operativo:</legend>
                     {% for sistema in sistemas %}
                         <label><input type="checkbox" name="sistema" value="{{ sistema }}"> {{ sistema }}</label>
                     {% endfor %}
-                </fieldset>
         
                 <!-- Botón para aplicar los filtros -->
                 <button type="button" onclick="cargarInventario()" id="buscar-filtros-btn">🔍 Buscar por filtros</button>

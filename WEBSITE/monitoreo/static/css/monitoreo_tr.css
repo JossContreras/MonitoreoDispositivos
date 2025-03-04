@@ -1,539 +1,192 @@
 /* 🔹 Estilos Generales */
 body {
-    font-family: 'Arial', sans-serif;
+    font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
     background-color: #f5f7fa;
-    text-align: center;
 }
 
 /* 🔹 Contenedor Principal */
 .container {
-    max-width: 90%;
-    margin: 20px auto;
+    max-width: 1200px;
+    margin: 0 auto;
     padding: 20px;
-    background: white;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
 }
 
-/* 🔹 Contenedor de la IP con el botón alineado */
-.ip-input-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    justify-content: space-between;
-    background: white;
-    padding: 5px;
-    border-radius: 4px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-/* 🔹 Estilo de los inputs de IP */
-.ip-input {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 18px;
-}
-
-.ip-input input {
-    width: 60px;
-    height: 35px;
-    text-align: center;
-    font-size: 16px;
-    border: 2px solid #007bff;
-    border-radius: 5px;
-    outline: none;
-    transition: box-shadow 0.3s ease;
-}
-
-.ip-input input:focus {
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.6);
-}
-
-/* 🔹 Espaciado entre los puntos de la IP */
-.ip-input span {
-    font-size: 20px;
-    font-weight: bold;
-    color: #007bff;
-}
-
-/* 🔹 Estilo del botón de búsqueda */
-#buscar-ip-btn {
-    width: 40px; /* Define un tamaño cuadrado */
-    height: 40px; /* Define un tamaño cuadrado */
-    background: linear-gradient(to right, #007bff, #0056b3);
-    color: white;
-    font-weight: bold;
-    border: none;
-    border-radius: 10%; /* Esto hace que el botón tenga bordes redondeados */
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 22px;
-    box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.2);
-    display: flex; /* Flexbox para centrar el contenido */
-    align-items: center; /* Centra verticalmente el texto */
-    justify-content: center; /* Centra horizontalmente el texto */
-}
-
-#buscar-ip-btn:hover {
-    background: linear-gradient(to right, #0056b3, #004494);
-    transform: scale(1.05);
-}
-
-#buscar-ip-btn:active {
-    transform: scale(0.96);
-    box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-
-#buscar-ip-btn:hover {
-    transform: scale(1.05);
-    background: linear-gradient(to right, #0056b3, #004494);
-}
-
-/* 🔹 Título */
-h1 {
-    font-size: 26px;
-    color: #333;
-    margin-bottom: 20px;
-    text-transform: uppercase;
-}
-
-/* 🔹 Filtros - Contenedor */
-.filtros-contenedor {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-    margin-bottom: 20px;
-    justify-content: center;
-    padding: 10px;
-}
-
-/* 🔹 Tarjetas de Filtros */
+/* 🔹 Tarjetas (Filtros y Búsqueda IP) */
 .card {
     background: white;
-    border-radius: 10px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
     padding: 15px;
-    width: 100%; /* Tarjetas ocupan el 100% del ancho disponible */
-    max-width: 450px;
-    transition: all 0.3s ease-in-out;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.card:hover {
-    transform: scale(1.02);
-}
-
-/* 🔹 Botón de Filtros (Desplegable) */
+/* 🔹 Botones de Filtro */
 .toggle-btn {
-    background: linear-gradient(to right, #007bff, #0056b3);
-    color: white;
-    font-size: 16px;
-    padding: 10px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
     width: 100%;
-    text-align: left;
-    transition: all 0.3s ease-in-out;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    background: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background 0.3s ease-in-out;
 }
 
 .toggle-btn:hover {
-    background: linear-gradient(to right, #0056b3, #004494);
+    background: #0056b3;
 }
 
+/* 🔹 Contenido de Filtros (Oculto por defecto) */
 .contenido {
-    padding: 10px;
     display: none;
+    margin-top: 10px;
 }
 
-/* 🔹 Inputs y Selects */
-select, input[type="text"] {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 16px;
-    width: 90%;
-    margin-top: 5px;
+/* 🔹 Inputs de búsqueda por IP */
+.ip-input-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.ip-input {
+    display: flex;
+    gap: 5px;
+}
+
+.ip-input input {
+    width: 40px;
     text-align: center;
 }
 
-select:focus, input[type="text"]:focus {
-    outline: none;
-    box-shadow: 0 0 8px rgba(0, 123, 255, 0.6);
-}
-
-/* 🔹 Botones */
-.botones {
-    margin: 20px 0;
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-}
-
-button {
-    padding: 12px 18px;
+/* 🔹 Botón de búsqueda */
+#buscar-ip-btn {
+    background: #28a745;
+    color: white;
     border: none;
-    border-radius: 8px;
+    padding: 10px;
+    border-radius: 5px;
     cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    transition: all 0.3s ease;
-    box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.2);
+    transition: background 0.3s ease;
 }
 
-button:hover {
-    transform: scale(1.05);
-    box-shadow: 3px 6px 8px rgba(0, 0, 0, 0.25);
+#buscar-ip-btn:hover {
+    background: #218838;
 }
 
-button:active {
-    transform: scale(0.96);
-    box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.2);
+/* 🔹 Botones Generales */
+.botones {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
 }
 
-/* 🔹 Botón Buscar */
-#buscar-filtros-btn, #buscar-ip-btn {
-    background: linear-gradient(to right, #007bff, #0056b3);
-    color: white;
+.botones button {
+    flex: 1;
+    min-width: 150px;
+    padding: 10px;
+    font-size: 14px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.3s;
 }
 
-#buscar-filtros-btn:hover, #buscar-ip-btn:hover {
-    background: linear-gradient(to right, #0056b3, #004494);
-}
-
-/* 🔹 Botón Eliminar Filtros */
-#eliminar-btn {
-    background: linear-gradient(to right, #dc3545, #a71d2a);
-    color: white;
-}
-
-#eliminar-btn:hover {
-    background: linear-gradient(to right, #a71d2a, #89151f);
-}
-
-/* 🔹 Botón Verificar Todos */
 #verificar-todos {
-    background: linear-gradient(to right, #28a745, #1e7e34);
+    background: #17a2b8;
     color: white;
 }
 
 #verificar-todos:hover {
-    background: linear-gradient(to right, #1e7e34, #155d27);
+    background: #138496;
 }
 
-/* 🔹 Tabla */
-.tabla-contenedor {
-    overflow-x: auto;
-    margin-top: 20px;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-}
-
-th, td {
-    padding: 14px;
-    border: 1px solid #ddd;
-    text-align: center;
-}
-
-th {
-    background: linear-gradient(to right, #007bff, #0056b3);
+#eliminar-btn {
+    background: red;
     color: white;
-    font-weight: bold;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-tr:hover {
-    background-color: rgba(0, 123, 255, 0.15);
-    transition: background-color 0.3s ease;
+#eliminar-btn:hover {
+    background: darkred;
 }
 
-/* 🔹 Estado del Dispositivo */
-.estado {
-    font-weight: bold;
-    transition: color 0.3s ease;
-}
-
-/* 🔹 Modal */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
+/* 🔹 Tabla (Diseño Responsivo) */
+.tabla-contenedor {
     width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    justify-content: center;
-    align-items: center;
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-.modal-contenido {
-    background: white;
-    padding: 20px;
+    overflow-x: auto;
     border-radius: 10px;
-    text-align: left;
-    width: 50%;
-    max-width: 500px;
-    position: relative;
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-/* 🔹 Tabla */
-.tabla-contenedor {
-    overflow-x: auto;
-    margin-top: 20px;
-    width: 100%;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
     background: white;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    table-layout: fixed;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 th, td {
-    padding: 14px;
-    border: 1px solid #ddd;
+    padding: 10px;
     text-align: center;
-    word-wrap: break-word;
+    border-bottom: 1px solid #ddd;
 }
 
 th {
-    background: linear-gradient(to right, #007bff, #0056b3);
+    background: #007bff;
     color: white;
-    font-weight: bold;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-tr:hover {
-    background-color: rgba(0, 123, 255, 0.15);
-    transition: background-color 0.3s ease;
+tbody tr:hover {
+    background: #f1f1f1;
 }
 
-/* 🔹 Estilo de botones dentro de la tabla */
-table button {
-    padding: 8px 12px;
-    font-size: 14px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-table button:hover {
-    background: linear-gradient(to right, #0056b3, #004494);
-    transform: scale(1.05);
-}
-
-table button:active {
-    transform: scale(0.96);
-    box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-/* 🔹 Responsividad para tablas */
+/* 🔹 Responsividad */
 @media (max-width: 768px) {
-    table {
-        width: 100%;
-        table-layout: auto;
-    }
-
-    th, td {
+    .container {
         padding: 10px;
-        font-size: 12px;
     }
 
-    .tabla-contenedor {
-        padding: 0 15px;
-    }
-
-    table button {
-        padding: 6px 10px; /* Reduce el tamaño de los botones */
-        font-size: 12px; /* Reduce el tamaño de la fuente del botón */
-    }
-}
-
-/* 🔹 Responsividad para pantallas muy pequeñas */
-@media (max-width: 480px) {
-    table {
-        width: 100%;
-        table-layout: auto;
-    }
-
-    th, td {
-        font-size: 10px;
+    .toggle-btn {
+        font-size: 14px;
         padding: 8px;
     }
 
-    .tabla-contenedor {
-        padding: 0 10px;
-    }
-
-    table button {
-        padding: 5px 8px; /* Reduce aún más el tamaño de los botones */
-        font-size: 10px; /* Ajusta el tamaño de la fuente del botón */
-    }
-}
-
-
-.cerrar {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 24px;
-    cursor: pointer;
-    color: #dc3545;
-    font-weight: bold;
-}
-
-.cerrar:hover {
-    color: #a71d2a;
-}
-
-/* 🔹 Animaciones */
-@keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.9); }
-    to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
-
-#loading {
-    display: none;
-    font-size: 18px;
-    font-weight: bold;
-    color: #007bff;
-    animation: pulse 1s infinite;
-}
-
-/* 🔹 Responsividad */
-@media (max-width: 768px) {
-    .container {
-        width: 95%;
-        padding: 15px;
-    }
-
-    .filtros-contenedor {
+    .botones {
         flex-direction: column;
-        align-items: center;
     }
 
-    .card {
-        width: 100%;
-        text-align: center;
+    table {
+        font-size: 14px;
     }
 
-    button {
-        width: 100%;
-        margin-top: 10px;
-    }
-
-    .tabla-contenedor {
-        overflow-x: scroll;
-    }
-
-    /* 🔹 Modal */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    justify-content: center;
-    align-items: center;
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-.modal-contenido {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    text-align: left;
-    width: 50%;
-    max-width: 500px;
-    position: relative;
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-.cerrar {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 24px;
-    cursor: pointer;
-    color: #dc3545;
-    font-weight: bold;
-}
-
-.cerrar:hover {
-    color: #a71d2a;
-}
-
-/* 🔹 Animaciones */
-@keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.9); }
-    to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
-
-#loading {
-    display: none;
-    font-size: 18px;
-    font-weight: bold;
-    color: #007bff;
-    animation: pulse 1s infinite;
-}
-
-/* 🔹 Responsividad */
-@media (max-width: 768px) {
-    .container {
-        width: 95%;
-        padding: 15px;
-    }
-
-    .filtros-contenedor {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .card {
-        width: 100%;
-        text-align: center;
-    }
-
-    button {
-        width: 100%;
-        margin-top: 10px;
-    }
-
-    .tabla-contenedor {
-        overflow-x: scroll;
-    }
-
-    .modal-contenido {
-        width: 90%;
+    th, td {
+        padding: 8px;
     }
 }
+
+@media (max-width: 480px) {
+    .toggle-btn {
+        font-size: 12px;
+        padding: 6px;
+    }
+
+    .ip-input input {
+        width: 30px;
+        font-size: 12px;
+    }
+
+    #buscar-ip-btn {
+        padding: 8px;
+        font-size: 12px;
+    }
+
+    table {
+        font-size: 12px;
+    }
 }

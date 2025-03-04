@@ -1,6 +1,10 @@
 document.addEventListener("DOMContentLoaded", function() {
     asignarEventosBotones();
     configurarFiltrosDesplegables();
+    function toggleFiltro(id) {
+        let filtro = document.getElementById(id);
+        filtro.style.display = (filtro.style.display === "none" || filtro.style.display === "") ? "block" : "none";
+    }
 });
 
 /* 🔹 Mostrar/Ocultar filtros desplegables */
@@ -250,3 +254,51 @@ function toggleFiltro(id) {
     let contenido = document.getElementById(id);
     contenido.classList.toggle('mostrar');
 }
+
+function toggleDropdown(id) {
+    document.getElementById(id).classList.toggle("show");
+}
+
+window.onclick = function(event) {
+    if (!event.target.matches('.dropbtn')) {
+        let dropdowns = document.getElementsByClassName("dropdown-content");
+        for (let i = 0; i < dropdowns.length; i++) {
+            let openDropdown = dropdowns[i];
+            if (openDropdown.classList.contains('show')) {
+                openDropdown.classList.remove('show');
+            }
+        }
+    }
+}
+
+function moverCursor(input, nextInputId) {
+    if (input.value.length === input.maxLength) {
+        document.getElementById(nextInputId).focus();
+    }
+}
+
+function soloNumeros(event) {
+    let char = String.fromCharCode(event.which);
+    if (!/[0-9]/.test(char)) {
+        event.preventDefault();
+    }
+}
+
+function buscarPorIP() {
+    alert("Búsqueda por IP en progreso...");
+}
+
+function verificarTodos() {
+    alert("Verificando todos los dispositivos...");
+}
+
+function eliminarFiltros() {
+    alert("Filtros eliminados.");
+}
+
+window.toggleFiltro = toggleFiltro;
+window.moverCursor = moverCursor;
+window.soloNumeros = soloNumeros;
+window.buscarPorIP = buscarPorIP;
+window.verificarTodos = verificarTodos;
+window.eliminarFiltros = eliminarFiltros;

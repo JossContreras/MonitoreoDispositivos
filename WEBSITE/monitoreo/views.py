@@ -116,6 +116,16 @@ def obtener_dispositivos_enlazados(id_inventario):
 from collections import deque
 from collections import deque
 
+from django.http import JsonResponse
+from collections import deque
+
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from collections import deque
+
+from django.http import JsonResponse
+from collections import deque
+
 def analizar_ruta(request):
     if request.method == "POST":
         ip_origen = request.POST.get("ip_origen")
@@ -124,15 +134,12 @@ def analizar_ruta(request):
         id_origen = obtener_id_por_ip(ip_origen)
         id_destino = obtener_id_por_ip(ip_destino)
 
-        print("ID Origen:", id_origen)
-        print("ID Destino:", id_destino)
-
         if not id_origen or not id_destino:
-            return render(request, "index.html", {"ruta": [], "error": "No se encontraron los dispositivos."})
+            return JsonResponse({"error": "No se encontraron los dispositivos."}, status=400)
 
-        # Paso 1: Encontrar la ruta más corta usando BFS (sin hacer ping todavía)
+        # Paso 1: Buscar la ruta más corta con BFS
         visitados = set()
-        cola = deque([(ip_origen, [])])  # Cola para BFS: (IP actual, camino hasta aquí)
+        cola = deque([(ip_origen, [])])
         ruta_mas_corta = []
 
         while cola:
@@ -149,30 +156,32 @@ def analizar_ruta(request):
                 break
 
             dispositivos = obtener_dispositivos_enlazados(obtener_id_por_ip(ip_actual))
-            print("Dispositivos enlazados de", ip_actual, ":", dispositivos)
-
             for _, ip_conectado in dispositivos:
                 if ip_conectado not in visitados:
                     cola.append((ip_conectado, nuevo_camino))
 
         if not ruta_mas_corta:
-            print("No se encontró una ruta.")
-            return render(request, "index.html", {"ruta": [], "error": "No hay conexión entre los dispositivos."})
+            return JsonResponse({"error": "No hay conexión entre los dispositivos."}, status=400)
 
-        print("Ruta más corta encontrada:", ruta_mas_corta)
-
-        # Paso 2: Hacer ping solo a los dispositivos de la ruta más corta
+        # Paso 2: Hacer ping a los dispositivos en la ruta encontrada
         ruta_con_ping = []
         for ip in ruta_mas_corta:
             resultado_ping = hacer_ping(ip)
             ruta_con_ping.append(resultado_ping)
 
-        return render(request, "index.html", {"ruta": ruta_con_ping})
+        # Devolver JSON en lugar de renderizar la plantilla
+        return JsonResponse({"ruta": ruta_con_ping})
 
-    return render(request, "index.html", {"ruta": []})
+    return JsonResponse({"error": "Método no permitido"}, status=405)
+
 
 
  #=========================================================================================================
+from django.shortcuts import render
+
+def monitoreo_red(request):
+    return render(request, "index.html")
+
 from django.shortcuts import render
 from django.http import JsonResponse
 from .models import Inventario, Ubicacion, DetallesTecnicos
@@ -234,3 +243,94 @@ def inventario_por_ubicacion(request):
         'marcas': marcas,
         'sistemas': sistemas
     })
+
+
+
+
+
+
+
+
+import io
+import networkx as nx
+import matplotlib.pyplot as plt
+from django.http import HttpResponse
+
+def generar_grafica_red():
+    G = nx.Graph()
+
+    # Simulación de enlaces (debería venir de tu base de datos)
+    enlaces = [(1, 2, "192.168.1.2"), (1, 3, "192.168.1.3"), (2, 4, "192.168.1.4"), (3, 4, "192.168.1.5")]
+
+    for origen, destino, ip in enlaces:
+        G.add_edge(origen, destino, label=ip)
+
+    plt.figure(figsize=(8, 6))
+    pos = nx.spring_layout(G)  
+    nx.draw(G, pos, with_labels=True, node_color="lightblue", edge_color="gray", node_size=2000, font_size=10)
+
+    labels = nx.get_edge_attributes(G, 'label')
+    nx.draw_networkx_edge_labels(G, pos, edge_labels=labels, font_size=8)
+
+    buf = io.BytesIO()
+    plt.savefig(buf, format="png")
+    plt.close()
+
+    buf.seek(0)
+    return buf
+
+def mostrar_grafica(request):
+    imagen = generar_grafica_red()
+    return HttpResponse(imagen.getvalue(), content_type="image/png")
+import networkx as nx
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import tempfile
+import os
+from django.http import HttpResponse
+
+def generar_animacion_red():
+    # Crear un grafo dirigido
+    G = nx.Graph()
+
+    # Simulación de enlaces entre dispositivos (cambia esto por tus datos reales)
+    enlaces = [
+        (1, 2), (1, 3), (1, 4),  # Router conectado a dispositivos
+        (2, 1), (3, 1), (4, 1)   # Dispositivos conectados de regreso
+    ]
+
+    G.add_edges_from(enlaces)
+
+    # Posiciones de los nodos
+    pos = nx.spring_layout(G)
+
+    fig, ax = plt.subplots()
+
+    # Función para actualizar cada frame de la animación
+    def actualizar_frame(frame):
+        ax.clear()
+        nx.draw(G, pos, ax=ax, with_labels=True, node_color='lightblue', edge_color='gray', node_size=700, font_size=10)
+        
+        # Resaltar enlaces hasta el frame actual
+        if frame < len(enlaces):
+            nx.draw_networkx_edges(G, pos, edgelist=[enlaces[frame]], ax=ax, edge_color='red', width=2.5)
+
+    # Crear la animación
+    ani = animation.FuncAnimation(fig, actualizar_frame, frames=len(enlaces), repeat=False)
+
+    # Guardar en un archivo temporal
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".gif") as temp_file:
+        temp_path = temp_file.name
+        ani.save(temp_path, writer="pillow", fps=1)
+
+    with open(temp_path, "rb") as f:
+        gif_data = f.read()
+
+    os.remove(temp_path)  # Eliminar archivo temporal después de leerlo
+
+    return HttpResponse(gif_data, content_type="image/gif")
+
+
+def mostrar_animacion(request):
+    imagen = generar_animacion_red()
+    return HttpResponse(imagen.getvalue(), content_type="image/gif")

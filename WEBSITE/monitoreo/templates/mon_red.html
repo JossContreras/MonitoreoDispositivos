@@ -1,0 +1,200 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tarjeta Desplegable y Redimensionable</title>
+    <style>
+        /* 🔹 Estilos Generales */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+        }
+
+        /* 🔹 Botón lateral (para abrir) */
+        .toggle-tab {
+            position: fixed;
+            top: 90%;
+            right: 0;
+            transform: translateY(-50%);
+            background: linear-gradient(to bottom, #007bff, #0056b3);
+            color: white;
+            padding: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 10px 0 0 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            writing-mode: vertical-rl;
+            text-align: center;
+            width: 35px;
+            height: 80px;
+        }
+
+        .toggle-tab:hover {
+            width: 40px;
+            background: linear-gradient(to bottom, #0056b3, #004494);
+        }
+
+        /* 🔹 Tarjeta desplegable */
+        .side-card {
+            position: fixed;
+            top: 0;
+            right: -100vw;
+            width: 30vw;
+            max-width: 95vw; /* 🔹 Puede expandirse hasta el 95% del viewport */
+            min-width: 220px;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 10px rgba(0, 0, 0, 0.3);
+            transition: right 0.4s ease-in-out;
+            z-index: 999;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            border-radius: 10px 0 0 10px;
+        }
+
+        .side-card.open {
+            right: 0;
+        }
+
+        /* 🔹 Botón de cierre */
+        .close-btn {
+            align-self: flex-end;
+            background: red;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .close-btn:hover {
+            background: darkred;
+        }
+
+        /* 🔹 Contenido de la tarjeta */
+        .card-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-top: 10px;
+        }
+
+        /* 🔹 Borde lateral para redimensionar */
+        .resize-handle {
+            position: absolute;
+            left: -5px;
+            top: 0;
+            width: 10px;
+            height: 100%;
+            cursor: ew-resize;
+            background: rgba(0, 0, 0, 0.2);
+            transition: background 0.2s;
+            border-radius: 5px 0 0 5px;
+        }
+
+        .resize-handle:hover {
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        /* 🔹 Responsividad avanzada */
+        @media (max-width: 768px) {
+            .side-card {
+                width: 50vw;
+                max-width: 90vw;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .side-card {
+                width: 70vw;
+                max-width: 95vw;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Botón interactivo (siempre visible) -->
+    <div class="toggle-tab" onclick="toggleCard()">☰</div>
+
+    <!-- Tarjeta desplegable con opción de redimensionar -->
+    <div class="side-card" id="sideCard">
+        <div class="resize-handle" id="resizeHandle"></div>
+        <button class="close-btn" onclick="toggleCard()">X</button>
+        <div class="card-content">
+            {% include 'index.html' %}
+        </div>
+    </div>
+
+    <script>
+        function toggleCard() {
+            const card = document.getElementById("sideCard");
+            const cardWidth = card.offsetWidth;
+
+            if (card.classList.contains("open")) {
+                card.classList.remove("open");
+                setTimeout(() => {
+                    card.style.right = `-${cardWidth}px`;
+                }, 400);
+            } else {
+                card.style.right = "0";
+                card.classList.add("open");
+            }
+        }
+
+        // Ajusta la posición si cambia el tamaño de la pantalla
+        window.addEventListener("resize", () => {
+            const card = document.getElementById("sideCard");
+            if (!card.classList.contains("open")) {
+                card.style.right = `-${card.offsetWidth}px`;
+            }
+        });
+
+        // Asegura que la tarjeta siempre esté oculta al inicio
+        document.addEventListener("DOMContentLoaded", () => {
+            const card = document.getElementById("sideCard");
+            card.style.right = `-${card.offsetWidth}px`;
+        });
+
+        // 🔹 Redimensionamiento manual de la tarjeta
+        const resizeHandle = document.getElementById("resizeHandle");
+        const sideCard = document.getElementById("sideCard");
+
+        let isResizing = false;
+
+        resizeHandle.addEventListener("mousedown", (event) => {
+            isResizing = true;
+            document.addEventListener("mousemove", resize);
+            document.addEventListener("mouseup", stopResize);
+        });
+
+        function resize(event) {
+            if (isResizing) {
+                let newWidth = window.innerWidth - event.clientX;
+                if (newWidth > 220 && newWidth < window.innerWidth * 0.95) { // 🔹 Nuevo máximo de 95% del viewport
+                    sideCard.style.width = `${newWidth}px`;
+                }
+            }
+        }
+
+        function stopResize() {
+            isResizing = false;
+            document.removeEventListener("mousemove", resize);
+            document.removeEventListener("mouseup", stopResize);
+        }
+    </script>
+
+</body>
+</html>
