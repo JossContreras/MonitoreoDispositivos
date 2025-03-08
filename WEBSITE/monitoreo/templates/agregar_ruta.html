@@ -1,0 +1,23 @@
+{% block content %}
+<h2>Agregar Nueva Ruta</h2>
+
+<form id="rutaForm" method="POST">
+    {% csrf_token %}
+    
+    <label for="nombre_ruta">Nombre de la Ruta:</label>
+    <input type="text" id="nombre_ruta" name="nombre_ruta" required><br><br>
+
+    <label for="descripcion">Descripción:</label>
+    <textarea id="descripcion" name="descripcion"></textarea><br><br>
+
+    <h3>Seleccionar Dispositivos:</h3>
+    {% for dispositivo in dispositivos %}
+        <input type="checkbox" name="dispositivos" value="{{ dispositivo.id }}">
+        <label>{{ dispositivo.nombre }} ({{ dispositivo.ip }})</label><br>
+    {% endfor %}
+
+    <br>
+    <button type="submit">Guardar Ruta</button>
+</form>
+
+{% endblock %}

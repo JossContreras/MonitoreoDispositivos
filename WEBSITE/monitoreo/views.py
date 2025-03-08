@@ -1,9 +1,11 @@
 import subprocess
+import django
+from matplotlib.style import context
 import mysql.connector
 import os
 import ipaddress
 import time
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.http import JsonResponse
 
 from .models import Inventario, Ubicacion
@@ -334,3 +336,85 @@ def generar_animacion_red():
 def mostrar_animacion(request):
     imagen = generar_animacion_red()
     return HttpResponse(imagen.getvalue(), content_type="image/gif")
+
+#==================================================================================================
+
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.http import JsonResponse
+from .models import Rutas
+from django.shortcuts import render
+from django.http import JsonResponse
+from .models import Rutas, Inventario
+
+from django.shortcuts import render, redirect
+from .models import Rutas, Inventario
+
+# Agregar ruta
+def agregar_ruta(request):
+    if request.method == 'POST':
+        nombre_ruta = request.POST.get('nombre_ruta')
+        descripcion = request.POST.get('descripcion')
+        dispositivos_seleccionados = request.POST.getlist('dispositivos')
+
+        ruta = Rutas.objects.create(
+            nombre_ruta=nombre_ruta,
+            descripcion=descripcion
+        )
+
+        for dispositivo_id in dispositivos_seleccionados:
+            dispositivo = Inventario.objects.get(id=dispositivo_id)
+            ruta.dispositivos.add(dispositivo)
+
+        return redirect('lista_rutas')
+
+    dispositivos = Inventario.objects.all()
+    return render(request, 'agregar_ruta.html', {'dispositivos': dispositivos})
+
+# Listar rutas
+from django.shortcuts import render
+from .models import Rutas, RutaDispositivos, Inventario
+
+def lista_rutas(request):
+    # Obtenemos las rutas y sus inventarios asociados a través del modelo intermedio
+    rutas = Rutas.objects.all()
+
+    for ruta in rutas:
+        # Obtenemos los inventarios relacionados a través de RutaDispositivos
+        inventarios = Inventario.objects.filter(rutadispositivos__id_ruta=ruta.id_ruta)
+
+        # Agregamos los inventarios a cada ruta para usarlos en la plantilla
+        ruta.inventarios = inventarios
+
+    return render(request, 'lista_rutas.html', {'rutas': rutas})
+
+from django.shortcuts import render, get_object_or_404
+from .models import Rutas, RutaDispositivos
+
+def eliminar_ruta(request, id_ruta):
+    # Obtener la ruta
+    ruta = get_object_or_404(Rutas, id_ruta=id_ruta)
+    
+    # Obtener los dispositivos asociados a la ruta, ordenados por el campo 'orden'
+    ruta_dispositivos = RutaDispositivos.objects.filter(id_ruta=ruta).order_by('orden')
+
+    if request.method == 'POST':
+        # Eliminar la ruta
+        ruta.delete()
+        return redirect('lista_rutas')
+    
+    # Renderizar la plantilla con los dispositivos ordenados
+    return render(request, 'eliminar_ruta.html', {'ruta': ruta, 'ruta_dispositivos': ruta_dispositivos})
+
+from django.shortcuts import render
+from .models import Inventario
+
+def ping_ruta(request, id_ruta):
+    """
+    Vista que obtiene los dispositivos asociados a una ruta específica.
+    """
+    # Obtener los dispositivos asociados a la ruta y convertirlos en una lista de diccionarios
+    dispositivos = list(Inventario.objects.filter(rutadispositivos__id_ruta=id_ruta).order_by('rutadispositivos__orden').values('id_inventario', 'nombre', 'ip'))
+
+    # Pasar los dispositivos al template como lista serializable
+    return render(request, 'ping_ruta.html', {'dispositivos': dispositivos, 'id_ruta': id_ruta})

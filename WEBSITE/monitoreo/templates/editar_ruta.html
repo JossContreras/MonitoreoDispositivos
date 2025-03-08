@@ -1,0 +1,51 @@
+{% block content %}
+<h2>Lista de Rutas</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Nombre de la Ruta</th>
+            <th>Descripción</th>
+            <th>Inventarios Asociados</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ruta in rutas %}
+        <tr>
+            <td>{{ ruta.nombre_ruta }}</td>
+            <td>{{ ruta.descripcion }}</td>
+            <td>
+                <button data-toggle="modal" data-target="#inventariosModal{{ ruta.id_ruta }}">Ver Inventarios</button>
+                <!-- Modal para ver los inventarios -->
+                <div class="modal" id="inventariosModal{{ ruta.id_ruta }}" tabindex="-1" role="dialog" aria-labelledby="inventariosModalLabel{{ ruta.id_ruta }}" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="inventariosModalLabel{{ ruta.id_ruta }}">Inventarios Asociados</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <ul>
+                                    {% for inventario in ruta.inventarios.all %}
+                                    <li>{{ inventario.nombre }} ({{ inventario.ip }})</li>
+                                    {% empty %}
+                                    <li>No hay inventarios asociados</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <a href="{% url 'eliminar_ruta' ruta.id_ruta %}">Eliminar</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

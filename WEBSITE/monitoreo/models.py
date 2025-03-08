@@ -203,7 +203,7 @@ class Inventario(models.Model):
     estado = models.CharField(max_length=50, blank=True, null=True)
     fecha_adquisicion = models.DateField(blank=True, null=True)
     id_ubicacion = models.ForeignKey('Ubicacion', models.DO_NOTHING, db_column='id_ubicacion')
-    ip = models.CharField(unique=True, max_length=60, blank=True, null=True)
+    ip = models.CharField(unique=True, max_length=15, blank=True, null=True)
 
     class Meta:
         managed = False
@@ -242,15 +242,25 @@ class Monitoreo(models.Model):
         db_table = 'monitoreo'
 
 
-class MonitoreoDispositivo(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    nombre = models.CharField(max_length=100)
-    ubicacion = models.CharField(max_length=100)
-    esta_activo = models.IntegerField()
+class RutaDispositivos(models.Model):
+    id_ruta = models.OneToOneField('Rutas', models.DO_NOTHING, db_column='id_ruta', primary_key=True)  # The composite primary key (id_ruta, id_inventario) found, that is not supported. The first column is selected.
+    id_inventario = models.ForeignKey(Inventario, models.DO_NOTHING, db_column='id_inventario')
+    orden = models.IntegerField()
 
     class Meta:
         managed = False
-        db_table = 'monitoreo_dispositivo'
+        db_table = 'ruta_dispositivos'
+        unique_together = (('id_ruta', 'id_inventario'),)
+
+
+class Rutas(models.Model):
+    id_ruta = models.AutoField(primary_key=True)
+    nombre_ruta = models.CharField(max_length=255)
+    descripcion = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'rutas'
 
 
 class Ubicacion(models.Model):

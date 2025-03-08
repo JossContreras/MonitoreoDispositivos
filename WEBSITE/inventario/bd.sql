@@ -29,6 +29,7 @@ CREATE TABLE Ubicacion_Dependencia (
 CREATE TABLE Inventario (
     id_inventario INT PRIMARY KEY AUTO_INCREMENT,
     nombre VARCHAR(255) NOT NULL,
+    ip VARCHAR(15) UNIQUE;
     tipo_elemento VARCHAR(100),
     estado VARCHAR(50),
     fecha_adquisicion DATE,
@@ -79,8 +80,6 @@ CREATE TABLE Historial_cambios (
     FOREIGN KEY (id_inventario) REFERENCES Inventario(id_inventario) ON DELETE CASCADE
 );
 
-ALTER TABLE Inventario ADD COLUMN ip VARCHAR(15) UNIQUE;
-
 CREATE TABLE Monitoreo (
     id_monitoreo INT PRIMARY KEY AUTO_INCREMENT,
     id_inventario INT NOT NULL,
@@ -96,4 +95,21 @@ CREATE TABLE Enlaces (
     estado VARCHAR(10),
     FOREIGN KEY (dispositivo_origen) REFERENCES Inventario(id_inventario) ON DELETE CASCADE,
     FOREIGN KEY (dispositivo_destino) REFERENCES Inventario(id_inventario) ON DELETE CASCADE
+);
+
+-- Tabla de rutas
+CREATE TABLE Rutas (
+    id_ruta INT PRIMARY KEY AUTO_INCREMENT,
+    nombre_ruta VARCHAR(255) NOT NULL,
+    descripcion TEXT
+);
+
+-- Relación entre rutas y dispositivos
+CREATE TABLE Ruta_Dispositivos (
+    id_ruta INT NOT NULL,
+    id_inventario INT NOT NULL,
+    orden INT NOT NULL,
+    PRIMARY KEY (id_ruta, id_inventario),
+    FOREIGN KEY (id_ruta) REFERENCES Rutas(id_ruta) ON DELETE CASCADE,
+    FOREIGN KEY (id_inventario) REFERENCES Inventario(id_inventario) ON DELETE CASCADE
 );

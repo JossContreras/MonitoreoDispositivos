@@ -1,0 +1,71 @@
+{% block content %}
+<h2>Dispositivos en Ruta {{ id_ruta }}</h2>
+<script id="dispositivos_data" type="application/json">
+    {{ dispositivos|json_script:"dispositivos_data" }}
+</script>
+<table class="table table-bordered table-striped">
+    <thead class="thead-dark">
+        <tr>
+            <th>Nombre</th>
+            <th>IP</th>
+            <th>Estado</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for dispositivo in dispositivos %}
+        <tr class="dispositivo-row" id="dispositivo_{{ dispositivo.id_inventario }}">
+            <td>{{ dispositivo.nombre }}</td>
+            <td>{{ dispositivo.ip }}</td>
+            <td id="estado_{{ dispositivo.id_inventario }}" class="estado-pendiente">
+                <span class="loading-animation"></span> Pendiente
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<button onclick="hacerPing()" class="btn btn-success mt-3">Iniciar Ping</button>
+
+<script>
+function hacerPing() {
+    let dispositivos = JSON.parse(document.getElementById('dispositivos_data').textContent);
+    let delay = 0;
+
+    dispositivos.forEach((dispositivo, index) => {
+        let estadoElement = document.getElementById("estado_" + dispositivo.id_inventario);
+        estadoElement.classList.add('loading');
+
+        setTimeout(() => {
+            fetch("{% url 'verificar_estado' %}?ip=" + dispositivo.ip) 
+            .then(response => response.json())
+            .then(data => {
+                estadoElement.classList.remove('loading');
+                if (data.estado === "exito") {
+                    estadoElement.classList.add('estado-activo');
+                    estadoElement.innerText = 'Activo (' + data.tiempo + ')';
+                } else if (data.estado === "error") {
+                    estadoElement.classList.add('estado-error');
+                    estadoElement.innerText = data.motivo;
+                } else if (data.estado === "inactivo") {
+                    estadoElement.classList.add('estado-inactivo');
+                    estadoElement.innerText = 'Inactivo';
+                } else {
+                    estadoElement.classList.add('estado-error');
+                    estadoElement.innerText = 'Error al obtener estado';
+                }
+            })
+            .catch(error => {
+                console.error('Error al verificar el estado:', error);
+                estadoElement.classList.remove('loading');
+                estadoElement.classList.add('estado-error');
+                estadoElement.innerText = 'Error';
+            });
+        }, delay);
+
+        delay += 1000;
+    });
+}
+</script>
+
+
+{% endblock %}

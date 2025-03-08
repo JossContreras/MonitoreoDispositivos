@@ -1,0 +1,287 @@
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">Lista de Rutas</h2>
+
+    <div class="table-responsive">
+        <table class="table table-hover table-striped">
+            <thead>
+                <tr>
+                    <th>Nombre de la Ruta</th>
+                    <th>Descripción</th>
+                    <th>Ruta Actual</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ruta in rutas %}
+                <tr id="fila-{{ ruta.id_ruta }}">
+                    <td>{{ ruta.nombre_ruta }}</td>
+                    <td>{{ ruta.descripcion }}</td>
+                    <td>
+                        <!-- Botón para abrir el modal -->
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal_{{ ruta.id_ruta }}">
+                            Ver Inventarios
+                        </button>
+
+                        <!-- Modal -->
+                        <div class="modal fade" id="modal_{{ ruta.id_ruta }}" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="modalLabel">Inventarios Asociados a {{ ruta.nombre_ruta }}</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div id="dispositivos-{{ ruta.id_ruta }}">
+                                            {% for inventario in ruta.inventarios %}
+                                                <div id="dispositivo-{{ ruta.id_ruta }}-{{ inventario.id_inventario }}" data-ip="{{ inventario.ip }}" class="card mb-3 dispositivo">
+                                                    <div class="card-body">
+                                                        <div class="d-flex justify-content-between">
+                                                            <div>
+                                                                <h5 class="card-title">{{ inventario.nombre }} ({{ inventario.ip }})</h5>
+                                                                <p class="card-text">
+                                                                    <span class="device-number">{{ forloop.counter }}.</span>
+                                                                    <span class="status-indicator text-muted"> - Pendiente</span>
+                                                                    <span class="ping-time"></span>
+                                                                </p>
+                                                            </div>
+                                                            <div>
+                                                                <!-- Actualizamos el evento onclick para que pase el id y la ip correctamente -->
+                                                                <button class="btn btn-sm btn-outline-secondary ping-btn" 
+                                                                        onclick="hacerPingIndividual({{ ruta.id_ruta }}, {{ inventario.id_inventario }}, '{{ inventario.ip }}')">
+                                                                    Hacer Ping
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                        <div class="error-message text-danger" style="display:none;"></div>
+                                                    </div>
+                                                </div>
+                                            {% empty %}
+                                                <p>No hay inventarios asociados.</p>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                                        <button type="button" class="btn btn-success" onclick="hacerPingTodos({{ ruta.id_ruta }})">Hacer Ping a Todos</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <a href="{% url 'eliminar_ruta' id_ruta=ruta.id_ruta %}" class="btn btn-danger">Eliminar</a>
+                        <a href="{% url 'ping_ruta' id_ruta=ruta.id_ruta %}" class="btn btn-primary">Ping Ruta</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+<!-- Scripts de Bootstrap y jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css">
+
+<script>
+function hacerPingTodos(rutaId) {
+    // Obtener todos los dispositivos de la ruta
+    let dispositivos = document.querySelectorAll(`#dispositivos-${rutaId} .dispositivo`);
+
+    // Deshabilitar el botón mientras se realiza el ping
+    let botonTodos = document.querySelector(`#modal_${rutaId} .btn-success`);
+    botonTodos.disabled = true;
+    botonTodos.innerText = 'Pinging...';
+
+    dispositivos.forEach((dispositivo, index) => {
+        let ip = dispositivo.getAttribute("data-ip");
+        setTimeout(() => {
+            hacerPingIndividual(rutaId, dispositivo.id.split('-')[2], ip);
+        }, index * 1500); // Esperar un poco entre cada ping
+    });
+
+    // Restaurar el estado del botón después de hacer ping a todos
+    setTimeout(() => {
+        botonTodos.disabled = false;
+        botonTodos.innerText = 'Hacer Ping a Todos';
+    }, dispositivos.length * 1500);
+}
+
+function hacerPingIndividual(rutaId, idInventario, ip) {
+    let dispositivo = document.getElementById(`dispositivo-${rutaId}-${idInventario}`);
+    let errorMessageElement = dispositivo.querySelector('.error-message');
+    let statusIndicator = dispositivo.querySelector('.status-indicator');
+    let pingTimeElement = dispositivo.querySelector('.ping-time');
+
+    // Mostrar animación de progreso
+    dispositivo.classList.add('ping-en-progreso');
+    statusIndicator.innerText = ' - Ping en progreso...';
+    errorMessageElement.style.display = 'none';
+
+    // Empezamos a medir el tiempo
+    let startTime = Date.now();
+
+    // Realizar ping con retraso
+    fetch("/monitoreo/verificar_estado/?ip=" + ip)
+        .then(response => response.json())
+        .then(data => {
+            let endTime = Date.now();
+            let duration = endTime - startTime; // Calculamos el tiempo de respuesta
+
+            dispositivo.classList.remove('ping-en-progreso');
+            pingTimeElement.innerText = ` - Tiempo: ${duration} ms`;
+
+            if (data.estado === "exito") {
+                statusIndicator.innerText = ' - Activo';
+                dispositivo.classList.add('estado-activo');
+                dispositivo.classList.remove('estado-error', 'estado-inactivo');
+            } else if (data.estado === "error") {
+                statusIndicator.innerText = ' - Error';
+                errorMessageElement.style.display = 'block';
+                errorMessageElement.innerHTML = `Motivo: ${data.motivo}`;
+                dispositivo.classList.add('estado-error');
+                dispositivo.classList.remove('estado-activo', 'estado-inactivo');
+            } else {
+                statusIndicator.innerText = ' - Inactivo';
+                dispositivo.classList.add('estado-inactivo');
+                dispositivo.classList.remove('estado-activo', 'estado-error');
+            }
+
+            // Suavizar la aparición de la información
+            pingTimeElement.classList.add('animate-fade');
+            statusIndicator.classList.add('animate-fade');
+        })
+        .catch(error => {
+            let endTime = Date.now();
+            let duration = endTime - startTime; // Calculamos el tiempo de respuesta en caso de error
+
+            dispositivo.classList.remove('ping-en-progreso');
+            pingTimeElement.innerText = ` - Tiempo: ${duration} ms`;
+            statusIndicator.innerText = ' - Error al hacer ping';
+            errorMessageElement.style.display = 'block';
+            errorMessageElement.innerText = 'Hubo un problema al intentar hacer ping.';
+            dispositivo.classList.add('estado-error');
+            dispositivo.classList.remove('estado-activo', 'estado-inactivo');
+
+            // Suavizar la aparición de la información
+            pingTimeElement.classList.add('animate-fade');
+            statusIndicator.classList.add('animate-fade');
+        });
+}
+</script>
+
+<style>
+/* Mejorar la estructura de la tabla con márgenes y mayor espacio */
+.container {
+    margin-top: 5rem;
+    margin-bottom: 2rem;
+}
+
+.table-responsive {
+    margin-top: 2rem;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    background-color: #fff;
+    border-radius: 8px;
+}
+
+.table th, .table td {
+    padding: 16px;
+    text-align: left;
+    vertical-align: middle;
+    font-size: 1rem;
+    border-bottom: 1px solid #ddd;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f9f9f9;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Modal */
+.modal-dialog {
+    max-width: 800px;
+    margin: 30px auto;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.card {
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+}
+
+.card-title {
+    font-size: 1.1rem;
+}
+
+.card-text {
+    font-size: 0.95rem;
+}
+
+.ping-btn {
+    background-color: #007bff;
+    color: white;
+}
+
+.ping-btn:hover {
+    background-color: #0056b3;
+}
+
+.error-message {
+    margin-top: 10px;
+}
+
+/* Estilos de los estados */
+.estado-activo {
+    background-color: #e8f5e8;
+    border-left: 5px solid green;
+}
+
+.estado-error {
+    background-color: #fff3cd;
+    border-left: 5px solid darkorange;
+}
+
+.estado-inactivo {
+    background-color: #f9e0e0;
+    border-left: 5px solid red;
+}
+
+.status-indicator {
+    font-weight: bold;
+    margin-left: 10px;
+    font-size: 1rem;
+}
+
+.device-number {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+/* Animación */
+@keyframes fade {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+.animate-fade {
+    animation: fade 1s ease-in-out;
+}
+</style>

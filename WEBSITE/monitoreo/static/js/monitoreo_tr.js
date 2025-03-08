@@ -284,17 +284,7 @@ function soloNumeros(event) {
     }
 }
 
-function buscarPorIP() {
-    alert("Búsqueda por IP en progreso...");
-}
 
-function verificarTodos() {
-    alert("Verificando todos los dispositivos...");
-}
-
-function eliminarFiltros() {
-    alert("Filtros eliminados.");
-}
 
 window.toggleFiltro = toggleFiltro;
 window.moverCursor = moverCursor;

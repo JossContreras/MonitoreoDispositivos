@@ -107,26 +107,22 @@ INSERT INTO Enlaces (id_enlace, dispositivo_origen, dispositivo_destino, estado)
 VALUES
 (1, 1, 2, 'Activo'),  -- Router Central a Switch Principal
 (2, 2, 3, 'Activo'),  -- Switch Principal a Servidor DHCP
-(3, 2, 4, 'Activo'),  -- Switch Principal a Firewall Externo
-(4, 2, 5, 'Activo'),  -- Switch Principal a AP1
-(5, 2, 6, 'Activo'),  -- Switch Principal a AP2
-(6, 1, 7, 'Activo'),  -- Router Central a Router Secundario
-(7, 7, 8, 'Activo'),  -- Router Secundario a Switch de Backup
-(8, 8, 9, 'Activo'),  -- Switch de Backup a Servidor de Logs
-(9, 2, 10, 'Activo'), -- Switch Principal a Cámara 1
-(10, 2, 11, 'Activo'), -- Switch Principal a Cámara 2
-(11, 2, 12, 'Activo'), -- Switch Principal a Servidor Web
 (12, 4, 1, 'Activo'); -- Firewall Externo a Router Central
 
 
+INSERT INTO Rutas (nombre_ruta, descripcion) 
+VALUES 
+('Ruta A', 'Ruta de monitoreo principal'),
+('Ruta B', 'Segunda ruta de monitoreo principal');
 
-
-
-
-
-
-
-
+INSERT INTO Ruta_Dispositivos (id_ruta, id_inventario, orden) 
+VALUES 
+(1, 1, 1),
+(1, 3, 2),
+(1, 2, 3),
+(1, 4, 4),
+(2, 1, 1),
+(2, 3, 2);
 
 
 SET FOREIGN_KEY_CHECKS = 0;
