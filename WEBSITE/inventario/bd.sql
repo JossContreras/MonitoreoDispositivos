@@ -106,10 +106,11 @@ CREATE TABLE Rutas (
 
 -- Relación entre rutas y dispositivos
 CREATE TABLE Ruta_Dispositivos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
     id_ruta INT NOT NULL,
     id_inventario INT NOT NULL,
     orden INT NOT NULL,
-    PRIMARY KEY (id_ruta, id_inventario),
     FOREIGN KEY (id_ruta) REFERENCES Rutas(id_ruta) ON DELETE CASCADE,
     FOREIGN KEY (id_inventario) REFERENCES Inventario(id_inventario) ON DELETE CASCADE
 );
+

@@ -120,9 +120,22 @@ VALUES
 (1, 1, 1),
 (1, 3, 2),
 (1, 2, 3),
-(1, 4, 4),
+(1, 4, 4);
 (2, 1, 1),
 (2, 3, 2);
+
+
+-- PRUEBASs
+INSERT INTO Rutas (nombre_ruta, descripcion) 
+VALUES 
+('Ruta C', 'Una ruta mas');
+
+INSERT INTO Ruta_Dispositivos (id_ruta, id_inventario, orden) 
+VALUES
+(4, 4, 1),
+(4, 2, 3),
+(4, 1, 2),
+(4, 3, 4);
 
 
 SET FOREIGN_KEY_CHECKS = 0;
@@ -138,23 +151,6 @@ ALTER TABLE Historial_Cambios AUTO_INCREMENT = 1;
 ALTER TABLE Enlaces AUTO_INCREMENT = 1;
 
 SET FOREIGN_KEY_CHECKS = 1;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

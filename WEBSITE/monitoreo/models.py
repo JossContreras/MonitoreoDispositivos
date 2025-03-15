@@ -243,14 +243,14 @@ class Monitoreo(models.Model):
 
 
 class RutaDispositivos(models.Model):
-    id_ruta = models.OneToOneField('Rutas', models.DO_NOTHING, db_column='id_ruta', primary_key=True)  # The composite primary key (id_ruta, id_inventario) found, that is not supported. The first column is selected.
+    id = models.AutoField(primary_key=True)
+    id_ruta = models.ForeignKey('Rutas', models.DO_NOTHING, db_column='id_ruta')
     id_inventario = models.ForeignKey(Inventario, models.DO_NOTHING, db_column='id_inventario')
     orden = models.IntegerField()
 
     class Meta:
         managed = False
         db_table = 'ruta_dispositivos'
-        unique_together = (('id_ruta', 'id_inventario'),)
 
 
 class Rutas(models.Model):

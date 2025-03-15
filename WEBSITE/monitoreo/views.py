@@ -418,3 +418,97 @@ def ping_ruta(request, id_ruta):
 
     # Pasar los dispositivos al template como lista serializable
     return render(request, 'ping_ruta.html', {'dispositivos': dispositivos, 'id_ruta': id_ruta})
+
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from .models import Rutas
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from .models import Rutas
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from .models import Rutas
+
+@csrf_exempt  # 🔴 Solo para pruebas, luego usa protección CSRF
+def agregar_ruta_definida(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            nueva_ruta = Rutas.objects.create(
+                nombre_ruta=data.get("nombre_ruta"),
+                descripcion=data.get("descripcion", "")
+            )
+            return JsonResponse({"mensaje": "Ruta agregada correctamente"}, status=201)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+
+    return JsonResponse({"error": "Método no permitido"}, status=405)
+
+
+from django.shortcuts import render
+
+def formulario_agregar_ruta_definida(request):
+    return render(request, 'agregar_ruta_definida.html')  # Asegúrate de que la ruta sea correcta
+
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Rutas
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Rutas, Inventario, RutaDispositivos
+
+def editar_ruta(request, id_ruta):
+    ruta = get_object_or_404(Rutas, id_ruta=id_ruta)
+    
+    # Obtener los dispositivos asociados a la ruta con su orden
+    dispositivos_ruta = RutaDispositivos.objects.filter(id_ruta=ruta).select_related("id_inventario").order_by("orden")
+
+    if request.method == "POST":
+        ruta.nombre_ruta = request.POST.get("nombre_ruta")
+        ruta.descripcion = request.POST.get("descripcion")
+        ruta.save()
+        return redirect("lista_rutas")  # Redirigir después de guardar
+
+    return render(request, "editar_ruta.html", {"ruta": ruta, "dispositivos_ruta": dispositivos_ruta})
+
+
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import get_object_or_404
+from .models import RutaDispositivos
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import RutaDispositivos
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import RutaDispositivos
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import get_object_or_404
+
+@csrf_exempt
+def eliminar_dispositivo_ruta_definida(request, id_ruta, id_dispositivo):
+    if request.method == "POST":
+        print(f"Intentando eliminar dispositivo con id: {id_dispositivo} en ruta: {id_ruta}")  # Debugging
+
+        relacion = get_object_or_404(RutaDispositivos, id=id_dispositivo, id_ruta=id_ruta)
+        relacion.delete()
+
+        # Reordenar los dispositivos restantes en la ruta
+        dispositivos_restantes = RutaDispositivos.objects.filter(id_ruta=id_ruta).order_by('orden')
+        for i, dispositivo in enumerate(dispositivos_restantes, start=1):
+            dispositivo.orden = i
+            dispositivo.save()
+
+        return JsonResponse({"success": True})
+
+    return JsonResponse({"error": "Método no permitido"}, status=405)
