@@ -1,0 +1,74 @@
+.container {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 80%;
+    max-width: 900px;
+    margin: auto;
+  }
+  
+  /* Secciones */
+  .seccionbusqueda {
+    padding: 15px;
+    border-radius: 10px;
+    background: #f8e6e6;
+  }
+  
+  .seccionresultado {
+    padding: 15px;
+    border-radius: 10px;
+    background: #f2f2f2;
+  }
+  
+  /* Formulario de búsqueda */
+  .busquedaform {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  select, input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .botonbuscar {
+    background: #8b1e2e;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .botonbuscar:hover {
+    background: #6f1724;
+  }
+  
+  /* Línea divisoria */
+  .division {
+    border: 0;
+    height: 1px;
+    background: #ccc;
+    margin: 10px 0;
+  }
+  
+  /* Información de resultado */
+  .infobasica, .infodetalles {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+  
+  input[readonly] {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+  }
+
+  .titleA {
+    margin-bottom: 10px;
+  }

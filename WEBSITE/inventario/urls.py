@@ -1,49 +1,40 @@
-from django.db import router
-from django.urls import include, path
-from . import views
-from rest_framework.routers import DefaultRouter
-from .views import UbicacionViewSet, eliminar_inventario_api
-
-router = DefaultRouter()
-router.register(r'ubicaciones', UbicacionViewSet)
+from django.urls import path
+from .views import (
+    ConfiguracionListView, ConfiguracionDetailView,
+    DependenciaListView, DependenciaDetailView,
+    DetallesTecnicosListView, DetallesTecnicosDetailView,
+    HistorialCambiosListView, HistorialCambiosDetailView,
+    IncidentesListView, IncidentesDetailView,
+    InventarioListView, InventarioDetailView,
+    UbicacionListView, UbicacionDetailView
+)
 
 urlpatterns = [
-    #Pagina de inicio
-    path('', views.index, name='principal'),
-    path('inicioo', views.pagprin, name='inicio'),
-    #paginas generales
-    #Formularios ABRIR DE MANERA VISUAL SIN CARGAR DATOS
-    path('crear_dispositivo', views.crear_dispositivo, name='crear_dispositivo'),
-    path('cambiar_dispositivo', views.cambiar_dispositivo, name='cambiar_dispositivo'),
-    path('editar_dispositivo', views.editar_dispositivo, name='editar_dispositivo'),
-    path('eliminar_dispositivo', views.eliminar_dispositivo, name='eliminar_dispositivo'),
-    path('incidente_dispositivo', views.incidentes, name='incidentes_dispositivo'),
-    #inicio de sesion
-    path('login', views.iniciar_cuenta, name='login'),
-    path('registrar', views.registrar_cuenta, name='registrar'),
+    # Rutas Configuración
+    path('configuracion/', ConfiguracionListView.as_view(), name='configuracion-list'),
+    path('configuracion/<int:pk>/', ConfiguracionDetailView.as_view(), name='configuracion-detail'),
 
-    #=========================================================================================
+    # Rutas Dependencia
+    path('dependencia/', DependenciaListView.as_view(), name='dependencia-list'),
+    path('dependencia/<int:pk>/', DependenciaDetailView.as_view(), name='dependencia-detail'),
 
-    # Vista Eliminar dispositvos
-    path("dispositivo/eliminar", views.eliminar_inventario, name="eliminar_inventario"),
-    # Eliminar dispositivos API
-    path("api/eliminar_inventario/<int:id_inventario>/", eliminar_inventario_api, name="eliminar_inventario_api"),
+    # Rutas Detalles Técnicos
+    path('detalles_tecnicos/', DetallesTecnicosListView.as_view(), name='detalles-tecnicos-list'),
+    path('detalles_tecnicos/<int:pk>/', DetallesTecnicosDetailView.as_view(), name='detalles-tecnicos-detail'),
 
-    # Actualizar dispositivos API
-    path("api/actualizar_dispositivo/<int:id_inventario>/", views.actualizar_dispositivo, name="actualizar_dispositivo"),
+    # Rutas Historial de Cambios
+    path('historial_cambios/', HistorialCambiosListView.as_view(), name='historial-cambios-list'),
+    path('historial_cambios/<int:pk>/', HistorialCambiosDetailView.as_view(), name='historial-cambios-detail'),
 
-    path("dispositivos/editar/<int:id_inventario>/", views.actualizar_dispositivo, name="editar_dispositivo"),
+    # Rutas Incidentes
+    path('incidentes/', IncidentesListView.as_view(), name='incidentes-list'),
+    path('incidentes/<int:pk>/', IncidentesDetailView.as_view(), name='incidentes-detail'),
 
-    path('dispositivos/incidentes/', views.agregar_incidente, name='agregar_incidente'),
-    path("dispositivos/incidentes/formulario/", views.formulario_incidente, name="formulario_incidente"),
+    # Rutas Inventario
+    path('inventario/', InventarioListView.as_view(), name='inventario-list'),
+    path('inventario/<int:pk>/', InventarioDetailView.as_view(), name='inventario-detail'),
 
-     #=========================================================================================
-    path('api/', include(router.urls)),
-
-    path('ubicaciones/vista/', views.ubicaciones_view, name='ubicaciones_list'),
-    path('ubicaciones/nueva/', views.ubicacion_create, name='ubicacion_create'),
-
-    path('dispositivo/crear', views.insertar_dispositivo, name='crear_dispositivo'),
-    path('eliminar_inventario/<int:id_inventario>/', views.eliminar_inventario_api, name='eliminar_inventario'),
-    path("insertar_dispositivo/", views.insertar_dispositivo, name="insertar_dispositivo"),
+    # Rutas Ubicación
+    path('ubicacion/', UbicacionListView.as_view(), name='ubicacion-list'),
+    path('ubicacion/<int:pk>/', UbicacionDetailView.as_view(), name='ubicacion-detail'),
 ]
