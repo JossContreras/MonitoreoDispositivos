@@ -8,6 +8,10 @@
 
 
 <style>
+    body {
+        background-color: #f0f0f0; /* Fondo gris claro */
+    }
+    
     .custom-card {
         background: linear-gradient(135deg, #ffffff, #f8f9fa);
         border-radius: 15px;
@@ -41,12 +45,19 @@
                 <label for="descripcion" class="form-label custom-header">Descripción</label>
                 <textarea id="descripcion" name="descripcion" class="form-control" required>{{ ruta.descripcion }}</textarea>
             </div>
+
+            
+    <div class="d-flex justify-content-center">
+        <button type="submit" class="btn btn-primary btn-lg custom-btn">💾 Guardar Cambios</button>
+        <a href="{% url 'lista_rutas' %}" class="btn btn-danger btn-lg ms-3 custom-btn">❌ Cancelar</a>
+    </div>
         </form>
     </div>
 
+
+
     <div class="card custom-card mb-4">
         <h3 class="text-center text-secondary">🔗 Dispositivos Asociados</h3>
-        {% if dispositivos_ruta %}
         <table class="table mt-3 table-bordered table-hover">
             <thead class="table-dark">
                 <tr>
@@ -58,7 +69,7 @@
             </thead>
             <tbody id="tabla-dispositivos">
                 {% for relacion in dispositivos_ruta %}
-                <tr id="dispositivo-{{ relacion.id }}">
+                <tr id="dispositivo-{{ relacion.id }}" data-id-inventario="{{ relacion.id_inventario.id_inventario }}">
                     <td class="orden-columna">{{ relacion.orden }}</td>
                     <td>{{ relacion.id_inventario.nombre }}</td>
                     <td>{{ relacion.id_inventario.ip }}</td>
@@ -71,21 +82,150 @@
                 {% endfor %}
             </tbody>
         </table>
-        {% else %}
-            <p class="text-center text-muted">No hay dispositivos asociados a esta ruta.</p>
-        {% endif %}
-    </div>
-
-    <div class="d-flex justify-content-center">
-        <button type="submit" class="btn btn-primary btn-lg custom-btn">💾 Guardar Cambios</button>
-        <a href="{% url 'lista_rutas' %}" class="btn btn-danger btn-lg ms-3 custom-btn">❌ Cancelar</a>
-    </div>
-</div>
+        
+    
+        <!-- Botón para mostrar el formulario -->
+        <div class="text-center mt-3">
+            <button class="btn btn-success btn-lg" onclick="toggleFormulario()">
+                <i class="fas fa-plus"></i> Agregar Dispositivo
+            </button>
+        </div>
+    
+        <!-- Tarjeta del formulario (oculta al inicio) -->
+        <div id="formulario-agregar" class="card p-3 mt-3" style="display: none;">
+            <h4 class="text-center text-primary">➕ Buscar y Agregar Dispositivo</h4>
+        
+            <!-- Barra de búsqueda -->
+            <div class="mb-3">
+                <label for="buscar_ip" class="form-label">Buscar por IP</label>
+                <input type="text" id="buscar_ip" class="form-control" placeholder="Ej: 192.168.1.100" oninput="buscarDispositivos()">
+            </div>
+        
+            <!-- Lista de dispositivos encontrados -->
+            <div id="resultado-busqueda" class="mb-3">
+                <p class="text-muted text-center">Escribe una IP para buscar dispositivos.</p>
+            </div>
+        
+            <!-- Botones de acción -->
+            <div class="text-center">
+                <!--
+                <button class="btn btn-primary btn-lg" onclick="agregarSeleccionados({{ ruta.id_ruta }})">
+                    <i class="fas fa-save"></i> Agregar Seleccionados
+                </button>
+                -->
+                <button class="btn btn-primary btn-lg" onclick="event.preventDefault(); agregarSeleccionado({{ ruta.id_ruta }});">
+                    <i class="fas fa-save"></i> Agregar Dispositivo
+                </button>                
+                
+                <button class="btn btn-secondary btn-lg" onclick="toggleFormulario()">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+            </div>
+        </div>
 
 <script>
+    let dispositivosSeleccionados = [];
+    let dispositivosEnRuta = new Set(); // Iniciamos vacío
+
+    function actualizarDispositivosEnRuta() {
+        dispositivosEnRuta.clear(); // 🔥 Limpiar antes de actualizar
+    
+        document.querySelectorAll("#tabla-dispositivos tbody tr").forEach(row => {
+            let idInventario = row.getAttribute("data-id-inventario");
+            if (idInventario) {
+                dispositivosEnRuta.add(parseInt(idInventario));
+            }
+        });
+    
+        console.log("✅ dispositivosEnRuta actualizado:", Array.from(dispositivosEnRuta));
+    }
+    
+    // Llamamos a la función al cargar la página
+    document.addEventListener("DOMContentLoaded", actualizarDispositivosEnRuta);
+
+    function actualizarDispositivosEnRuta() {
+        dispositivosEnRuta.clear(); // 🔥 Limpiar antes de actualizar
+    
+        let filas = document.querySelectorAll("#tabla-dispositivos tr");
+    
+        if (filas.length === 0) {
+            console.warn("⚠️ No se encontraron dispositivos en la tabla.");
+            return;
+        }
+    
+        filas.forEach(row => {
+            let idInventario = row.getAttribute("data-id-inventario");
+    
+            if (!idInventario) {
+                console.warn("⚠️ Esta fila no tiene data-id-inventario:", row);
+            } else {
+                dispositivosEnRuta.add(parseInt(idInventario));
+                console.log(`✅ Agregado a dispositivosEnRuta: ${idInventario}`);
+            }
+        });
+    
+        console.log("🔄 Dispositivos en ruta actualizados:", Array.from(dispositivosEnRuta));
+    }
+    
+
+    window.dispositivoSeleccionado = null;  // Definir en el ámbito global
+
+    function seleccionarDispositivo(radio) {
+        console.log("🔥 seleccionarDispositivo() fue llamada.");  
+    
+        if (!radio) {
+            console.warn("⚠️ No se recibió ningún radio button.");
+            return;
+        }
+    
+        let id = radio.value;
+        let nombre = radio.getAttribute("data-nombre");
+        let ip = radio.getAttribute("data-ip");
+    
+        console.log("🔍 ID seleccionado:", id);
+        console.log("🔍 Nombre:", nombre);
+        console.log("🔍 IP:", ip);
+    
+        window.dispositivoSeleccionado = { id, nombre, ip };
+        console.log("✅ FINAL - Dispositivo guardado en window:", window.dispositivoSeleccionado);
+    }
+    
+    function actualizarDispositivosEnRuta() {
+    dispositivosEnRuta = new Set();  // 🔥 Reiniciar el Set manualmente para asegurarnos de que está limpio
+
+    let filas = document.querySelectorAll("#tabla-dispositivos tr");
+
+    if (filas.length === 0) {
+        console.warn("⚠️ No se encontraron dispositivos en la tabla.");
+        return;
+    }
+
+    filas.forEach(row => {
+        let idInventario = row.getAttribute("data-id-inventario");
+
+        if (!idInventario) {
+            console.warn("⚠️ Esta fila no tiene data-id-inventario:", row);
+        } else {
+            let idNumerico = Number(idInventario);  // 🔥 Convertir a número de manera segura
+            dispositivosEnRuta.add(idNumerico);
+            console.log(`✅ Agregado a dispositivosEnRuta: ${idNumerico}`);
+        }
+    });
+
+    console.log("🔄 dispositivosEnRuta actualizado:", Array.from(dispositivosEnRuta));
+}
+
+    console.log("📌 Dispositivos en la ruta:", dispositivosEnRuta);
+    
     function eliminarDispositivo(id_ruta, id_dispositivo) {
+        // 🔍 Verificación de `id_ruta`
+        if (!id_ruta || isNaN(id_ruta)) {
+            console.error("❌ Error: `id_ruta` no es válido:", id_ruta);
+            return;
+        }
+    
         const url = `/monitoreo/ruta/${id_ruta}/eliminar-dispositivo/${id_dispositivo}/`;
-        console.log("URL generada:", url);
+        console.log("📌 URL de eliminación generada:", url);  // Debug
     
         fetch(url, {
             method: 'POST',
@@ -96,25 +236,345 @@
         })
         .then(response => response.json())
         .then(data => {
-            console.log("Respuesta del servidor:", data);
             if (data.success) {
+                console.log("✅ Dispositivo eliminado correctamente:", id_dispositivo);
+    
+                // 🔄 Eliminar el dispositivo de la tabla
                 document.getElementById(`dispositivo-${id_dispositivo}`).remove();
-                actualizarOrden();
+    
+                // 🔥 Se actualiza la lista de dispositivos en ruta
+                actualizarTablaDesdeServidor(id_ruta);
+                actualizarDispositivosEnRuta();
+                buscarDispositivos();
             } else {
-                console.error("Error en el servidor:", data.error);
+                console.error("❌ Error al eliminar:", data.error);
+            }
+        })
+        .catch(error => console.error("❌ Error en la petición:", error));
+    }
+    
+
+    function actualizarOrden() {
+        let dispositivos = [];  // Aquí tendrás los dispositivos con su nuevo orden
+        let filas = document.querySelectorAll("#tabla-dispositivos tr");
+    
+        filas.forEach((fila, index) => {
+            let id_dispositivo = fila.getAttribute("data-id");  // Asegúrate de tener un atributo "data-id" en cada fila
+            dispositivos.push(`${id_dispositivo}_${index + 1}`);
+        });
+    
+        fetch(`/ruta/${rutaId}/actualizar-orden/`, {
+            method: 'POST',
+            body: new URLSearchParams({
+                'dispositivos[]': dispositivos
+            }),
+            headers: {
+                'X-CSRFToken': csrfToken  // Asegúrate de incluir el token CSRF para proteger la solicitud
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Orden actualizado correctamente');
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Hubo un error al actualizar el orden');
+        });
+    }
+    
+    function reordenarTabla() {
+        let filas = Array.from(document.querySelectorAll("#tabla-dispositivos tr"));
+        filas.sort((a, b) => {
+            let ordenA = parseInt(a.querySelector('.orden-columna').textContent);
+            let ordenB = parseInt(b.querySelector('.orden-columna').textContent);
+            return ordenA - ordenB;
+        });
+    
+        let tabla = document.querySelector("#tabla-dispositivos");
+        filas.forEach(fila => tabla.appendChild(fila));  // Vuelve a agregar las filas en el orden correcto
+    }
+    
+    function actualizarOrdenDispositivo(idDispositivo, nuevoOrden) {
+        // Realizamos la actualización de orden de un dispositivo en el backend si es necesario
+        fetch(`/monitoreo/ruta/actualizar-orden/${idDispositivo}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ nuevoOrden: nuevoOrden })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log(`Orden actualizado para el dispositivo ${idDispositivo}`);
+            } else {
+                console.error("Error al actualizar el orden:", data.error);
+            }
+        })
+        .catch(error => console.error("Error en la solicitud:", error));
+    }
+
+    function agregarDispositivo(id_ruta) {
+        let ip = document.getElementById("ip_dispositivo").value.trim();
+        
+        if (!ip) {
+            alert("Por favor, ingresa una dirección IP válida.");
+            return;
+        }
+
+        fetch(`/monitoreo/ruta/${id_ruta}/agregar-dispositivo/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ ip: ip })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                let tabla = document.getElementById("tabla-dispositivos");
+                let newRow = document.createElement("tr");
+                newRow.id = `dispositivo-${data.id}`;
+
+                newRow.innerHTML = `
+                    <td class="orden-columna">${tabla.rows.length + 1}</td>
+                    <td>${data.nombre}</td>
+                    <td>${data.ip}</td>
+                    <td>
+                        <button class="btn btn-danger btn-lg" onclick="eliminarDispositivo(${id_ruta}, ${data.id})">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                `;
+
+                tabla.appendChild(newRow);
+                document.getElementById("ip_dispositivo").value = "";
+                toggleFormulario();
+                actualizarDispositivosEnRuta();  // 🔥 Se actualiza en tiempo real
+                buscarDispositivos();
+            } else {
+                alert("Error: " + data.error);
             }
         })
         .catch(error => console.error("Error en la petición:", error));
     }
+
+    function toggleFormulario() {
+        let form = document.getElementById("formulario-agregar");
+        form.style.display = (form.style.display === "none" || form.style.display === "") ? "block" : "none";
+    }
     
+    function buscarDispositivos() {
+        let ip = document.getElementById("buscar_ip").value.trim();
+        let resultadoDiv = document.getElementById("resultado-busqueda");
+    
+        if (ip.length < 3) {
+            resultadoDiv.innerHTML = '<p class="text-muted text-center">Escribe una IP para buscar dispositivos.</p>';
+            return;
+        }
+    
+        fetch(`/monitoreo/buscar-dispositivo/?ip=${ip}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.length === 0) {
+                    resultadoDiv.innerHTML = '<p class="text-danger text-center">No se encontraron dispositivos.</p>';
+                    return;
+                }
+    
+                let lista = '<ul class="list-group">';
+                data.forEach(dispositivo => {
+                    let idNumerico = Number(dispositivo.id_inventario);
+                    let disabled = dispositivosEnRuta.has(idNumerico) ? "disabled" : "";  // 🔥 Bloquear si ya está en la ruta
+    
+                    lista += `
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>${dispositivo.nombre} - ${dispositivo.ip}</span>
+                            <input type="radio" name="seleccionDispositivo" value="${dispositivo.id_inventario}"
+                                   data-nombre="${dispositivo.nombre}" data-ip="${dispositivo.ip}"
+                                   onchange="seleccionarDispositivo(this)" ${disabled}>
+                        </li>`;
+                });
+                lista += '</ul>';
+                resultadoDiv.innerHTML = lista;
+    
+                console.log("🔄 Se actualizó la búsqueda con dispositivos en ruta:", Array.from(dispositivosEnRuta));
+            })
+            .catch(error => console.error("❌ Error en la búsqueda:", error));
+    }
     
 
-    function actualizarOrden() {
-        let filas = document.querySelectorAll("#tabla-dispositivos tr");
-        filas.forEach((fila, index) => {
-            fila.querySelector(".orden-columna").textContent = index + 1;
-        });
+    function agregarSeleccionado(id_ruta) {
+        console.log("🛠 Intentando agregar dispositivo:", window.dispositivoSeleccionado);
+    
+        if (!window.dispositivoSeleccionado) {
+            alert("Selecciona un dispositivo antes de agregarlo.");
+            return;
+        }
+    
+        let datosEnvio = { ip: window.dispositivoSeleccionado.ip };
+    
+        console.log("📤 Enviando datos al backend:", JSON.stringify(datosEnvio));
+    
+        fetch(`/monitoreo/ruta/${id_ruta}/agregar-dispositivo/`, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(datosEnvio)
+        })
+        .then(async response => {
+            let data = await response.json();
+            console.log("✅ Respuesta del servidor:", data);
+            if (response.ok) {
+                toggleFormulario();
+                actualizarTablaDesdeServidor(id_ruta);  // 🔥 Recarga la tabla automáticamente
+                setTimeout(() => {
+                    console.log("📌 Limpiando selección después de agregar el dispositivo.");
+                    window.dispositivoSeleccionado = null;
+                }, 1000);
+            } else {
+                console.error("❌ Error en la solicitud:", data);
+                alert(`❌ Error: ${data.error || "Solicitud inválida"}`);
+            }
+        })
+        .catch(error => console.error("❌ Error en la solicitud:", error));
     }
+    
+    
+    
+    function obtenerDispositivosRuta(idRuta) {
+        fetch(`/monitoreo/ruta/${idRuta}/dispositivos/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.dispositivos && data.dispositivos.length > 0) {
+                    // Actualizar dispositivosEnRuta con los dispositivos obtenidos
+                    data.dispositivos.forEach(dispositivo => {
+                        dispositivosEnRuta.add(dispositivo.id_inventario);
+                    });
+                    actualizarTablaDispositivos(data.dispositivos);
+                } else {
+                    console.log("No se encontraron dispositivos para esta ruta.");
+                }
+            })
+            .catch(error => console.error("Error al obtener dispositivos:", error));
+    }
+
+
+    function actualizarTablaDispositivos(dispositivos) {
+        console.log("🔄 Actualizando la tabla con nuevos dispositivos...");
+        console.log("📥 Dispositivos recibidos:", dispositivos);
+    
+        const tablaDispositivos = document.getElementById("tabla-dispositivos");
+        if (!tablaDispositivos) {
+            console.error("❌ No se encontró la tabla en el DOM.");
+            return;
+        }
+    
+        tablaDispositivos.innerHTML = '';  // 🔥 Limpiar antes de actualizar
+    
+        if (!dispositivos || dispositivos.length === 0) {
+            console.warn("⚠️ No hay dispositivos en la ruta.");
+            tablaDispositivos.innerHTML = `<tr><td colspan="4" class="text-center">No hay dispositivos en la ruta.</td></tr>`;
+            return;
+        }
+    
+        dispositivos.forEach(relacion => {
+            console.log("➕ Agregando dispositivo:", relacion);
+    
+            const row = document.createElement("tr");
+            row.id = `dispositivo-${relacion.id}`;
+            row.setAttribute('data-id-inventario', relacion.id_inventario);
+    
+            row.innerHTML = `
+                <td class="orden-columna">${relacion.orden}</td>
+                <td>${relacion.nombre}</td> <!-- Coincide con {{ relacion.id_inventario.nombre }} -->
+                <td>${relacion.ip}</td> <!-- Coincide con {{ relacion.id_inventario.ip }} -->
+                <td>
+                    <button class="btn btn-danger btn-lg" onclick="eliminarDispositivo(${relacion.id_ruta}, ${relacion.id})">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            `;
+    
+            console.log(`📌 Botón generado: eliminarDispositivo(${relacion.id_ruta}, ${relacion.id})`);
+    
+            tablaDispositivos.appendChild(row);
+        });
+    
+        console.log("✅ Tabla actualizada correctamente.");
+    }
+    
+    
+    function actualizarDispositivosSeleccionados() {
+        // Limpiar la búsqueda y actualizar la lista de dispositivos
+        let ip = document.getElementById("buscar_ip").value.trim();
+        let resultadoDiv = document.getElementById("resultado-busqueda");
+    
+        fetch(`/monitoreo/buscar-dispositivo/?ip=${ip}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.length === 0) {
+                resultadoDiv.innerHTML = '<p class="text-danger text-center">No se encontraron dispositivos.</p>';
+                return;
+            }
+    
+            let lista = '<ul class="list-group">';
+            data.forEach(dispositivo => {
+                // Verificar si el dispositivo ya está en la ruta o si está en la lista de seleccionados
+                let checked = dispositivosEnRuta.has(dispositivo.id_inventario) || dispositivosSeleccionados.some(d => d.id === dispositivo.id_inventario) ? "checked disabled" : "";
+    
+                lista += `
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>${dispositivo.nombre} - ${dispositivo.ip}</span>
+                        <input type="checkbox" value="${dispositivo.id_inventario}" onclick="seleccionarDispositivo(this, '${dispositivo.nombre}', '${dispositivo.ip}')" ${checked}>
+                    </li>`;
+            });
+            lista += '</ul>';
+            resultadoDiv.innerHTML = lista;
+        })
+        .catch(error => console.error("Error en la búsqueda:", error));
+    }
+    
+    function inicializarDispositivosEnRuta() {
+        dispositivosEnRuta = new Set();
+    
+        document.querySelectorAll("#tabla-dispositivos tbody tr").forEach(row => {
+            let idInventario = row.getAttribute("data-id-inventario");
+            if (idInventario) {
+                dispositivosEnRuta.add(parseInt(idInventario));
+            }
+        });
+    
+        console.log("✅ dispositivosEnRuta inicializado:", Array.from(dispositivosEnRuta));
+    }
+    
+    // Llamamos a la función cuando la página carga
+    // document.addEventListener("DOMContentLoaded", inicializarDispositivosEnRuta);
+    
+    function actualizarTablaDesdeServidor(idRuta) {
+        fetch(`/monitoreo/ruta/${idRuta}/dispositivos/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.dispositivos && data.dispositivos.length > 0) {
+                    actualizarTablaDispositivos(data.dispositivos);  // 🔥 Actualiza la tabla con los nuevos dispositivos
+                    actualizarDispositivosEnRuta();  // 🔄 Vuelve a calcular dispositivosEnRuta
+                    buscarDispositivos();  // 🔄 Refresca la lista de búsqueda
+                } else {
+                    console.log("❌ No se encontraron dispositivos en la ruta.");
+                    document.getElementById("tabla-dispositivos").innerHTML = '<tr><td colspan="4" class="text-center">No hay dispositivos en la ruta.</td></tr>';
+                    actualizarDispositivosEnRuta();
+                }
+            })
+            .catch(error => console.error("❌ Error al obtener dispositivos:", error));
+    }
+    
+    
 </script>
 
 {% endblock %}

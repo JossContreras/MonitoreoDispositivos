@@ -1,9 +1,12 @@
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4 text-center">Lista de Rutas</h2>
+    <h2 class="mb-4 text-center">Rutas establecidas</h2>
 
     <div class="table-responsive">
+        <!-- Botón "Agregar Ruta Definida" en la esquina superior derecha -->
+    <button class="btn-agregar" onclick="window.location.href='/monitoreo/ruta/agregar/ruta_definida'">Crear nueva ruta</button>
         <table class="table table-hover table-striped">
+            
             <thead>
                 <tr>
                     <th>Nombre de la Ruta</th>
@@ -48,7 +51,6 @@
                                                                 </p>
                                                             </div>
                                                             <div>
-                                                                <!-- Actualizamos el evento onclick para que pase el id y la ip correctamente -->
                                                                 <button class="btn btn-sm btn-outline-secondary ping-btn" 
                                                                         onclick="hacerPingIndividual({{ ruta.id_ruta }}, {{ inventario.id_inventario }}, '{{ inventario.ip }}')">
                                                                     Hacer Ping
@@ -72,8 +74,15 @@
                         </div>
                     </td>
                     <td>
-                        <a href="{% url 'editar_ruta' ruta.id_ruta %}" class="btn btn-warning">Editar</a>
-                        <a href="{% url 'eliminar_ruta' id_ruta=ruta.id_ruta %}" class="btn btn-danger">Eliminar</a>
+                          <!-- Icono de Editar (sin cambios) -->
+    <a href="{% url 'editar_ruta' ruta.id_ruta %}" class="btn btn-warning" title="Editar">
+        <i class="fas fa-edit"></i> 
+    </a>
+
+    <!-- Icono de Eliminar (con el texto a la derecha del icono) -->
+    <a href="{% url 'eliminar_ruta' id_ruta=ruta.id_ruta %}" class="btn btn-danger" title="Eliminar">
+         <i class="fas fa-trash"></i> 
+    </a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -81,10 +90,11 @@
         </table>
     </div>
 </div>
-
 {% endblock %}
 
+
 <!-- Scripts de Bootstrap y jQuery -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css">
@@ -183,7 +193,27 @@ function hacerPingIndividual(rutaId, idInventario, ip, intentos = 0) {
 </script>
 
 <style>
+    
+    body {
+        background-color: #f0f0f0; /* Fondo gris claro */
+    }
+
 /* Mejorar la estructura de la tabla con márgenes y mayor espacio */
+
+/* Estilo para los botones con iconos */
+.btn i {
+    margin-right: 8px; /* Espacio entre el icono y el texto */
+}
+
+/* Ajuste en el tamaño de los iconos */
+.btn-warning i, .btn-danger i {
+    font-size: 25px;
+}
+
+.btn:hover {
+    opacity: 0.9; /* Efecto visual al pasar el cursor */
+}
+
 .container {
     margin-top: 5rem;
     margin-bottom: 2rem;
@@ -290,4 +320,135 @@ function hacerPingIndividual(rutaId, idInventario, ip, intentos = 0) {
 .animate-fade {
     animation: fade 1s ease-in-out;
 }
+
+/* Estilos generales */
+.container {
+    margin-top: 5rem;
+    margin-bottom: 2rem;
+}
+
+.table-responsive {
+    margin-top: 2rem;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    background-color: #fff;
+    border-radius: 8px;
+}
+
+.table th, .table td {
+    padding: 16px;
+    text-align: left;
+    vertical-align: middle;
+    font-size: 1rem;
+    border-bottom: 1px solid #ddd;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f9f9f9;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Estilo para el botón "Agregar Ruta Definida" */
+.btn-agregar {
+    position: relative;
+    top: 10px;
+    right: 10px;
+    padding: 12px 24px;
+    background-color: #6dbf7b; /* Fondo verde natural */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+    z-index: 10;
+    position: absolute;
+}
+
+.btn-agregar:hover {
+    background-color: #58a55c; /* Cambio de color al pasar el cursor */
+}
+
+/* Modal */
+.modal-dialog {
+    max-width: 800px;
+    margin: 30px auto;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.card {
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+}
+
+.card-title {
+    font-size: 1.1rem;
+}
+
+.card-text {
+    font-size: 0.95rem;
+}
+
+.ping-btn {
+    background-color: #007bff;
+    color: white;
+}
+
+.ping-btn:hover {
+    background-color: #0056b3;
+}
+
+.error-message {
+    margin-top: 10px;
+}
+
+/* Estilos de los estados */
+.estado-activo {
+    background-color: #e8f5e8;
+    border-left: 5px solid green;
+}
+
+.estado-error {
+    background-color: #fff3cd;
+    border-left: 5px solid darkorange;
+}
+
+.estado-inactivo {
+    background-color: #f9e0e0;
+    border-left: 5px solid red;
+}
+
+.status-indicator {
+    font-weight: bold;
+    margin-left: 10px;
+    font-size: 1rem;
+}
+
+.device-number {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+/* Animación */
+@keyframes fade {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+.animate-fade {
+    animation: fade 1s ease-in-out;
+}
+
 </style>

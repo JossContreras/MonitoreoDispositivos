@@ -512,3 +512,163 @@ def eliminar_dispositivo_ruta_definida(request, id_ruta, id_dispositivo):
         return JsonResponse({"success": True})
 
     return JsonResponse({"error": "Método no permitido"}, status=405)
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from .models import Inventario, Rutas, RutaDispositivos  # Asegúrate de usar los modelos correctos
+
+@csrf_exempt
+def agregar_dispositivo_por_ip(request, id_ruta):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            ip = data.get("ip")
+
+            # Buscar el dispositivo en la base de datos
+            dispositivo = Inventario.objects.filter(ip=ip).first()
+
+            if not dispositivo:
+                return JsonResponse({"success": False, "error": "El dispositivo no existe"}, status=400)
+
+            # Verificar si el dispositivo ya está en la ruta
+            if RutaDispositivos.objects.filter(id_ruta_id=id_ruta, id_inventario=dispositivo).exists():
+                return JsonResponse({"success": False, "error": "El dispositivo ya está en esta ruta"}, status=400)
+
+            # Obtener el último orden y sumarle 1
+            ultimo_orden = RutaDispositivos.objects.filter(id_ruta_id=id_ruta).order_by("-orden").first()
+            nuevo_orden = (ultimo_orden.orden + 1) if ultimo_orden else 1
+
+            # Crear la relación
+            nueva_relacion = RutaDispositivos.objects.create(
+                id_ruta_id=id_ruta,  # Cambiado de ruta_id a id_ruta_id
+                id_inventario=dispositivo,
+                orden=nuevo_orden
+            )
+
+            return JsonResponse({
+                "success": True,
+                "id": nueva_relacion.id,
+                "nombre": dispositivo.nombre,
+                "ip": dispositivo.ip,
+                "orden": nuevo_orden
+            })
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)}, status=500)
+    
+    return JsonResponse({"success": False, "error": "Método no permitido"}, status=405)
+
+from django.http import JsonResponse
+from .models import Inventario  # Asegúrate de importar tu modelo correctamente
+from django.http import JsonResponse
+from .models import Inventario  # Asegúrate de importar correctamente
+
+def buscar_dispositivo(request):
+    try:
+        ip_query = request.GET.get('ip', '').strip()
+        
+        if not ip_query:
+            return JsonResponse({'error': 'No se proporcionó una IP'}, status=400)
+
+        # Consulta correcta sin renombrar claves
+        dispositivos = Inventario.objects.filter(ip__icontains=ip_query).values('id_inventario', 'nombre', 'ip')
+
+        # 🔹 Imprimir para depuración
+        print("📡 Dispositivos encontrados:", list(dispositivos))
+
+        return JsonResponse(list(dispositivos), safe=False)
+    
+    except Exception as e:
+        print("❌ Error en buscar_dispositivo:", str(e))
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from monitoreo.models import Inventario, RutaDispositivos, Rutas
+
+import json
+from django.http import JsonResponse
+
+import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import Rutas, Inventario, RutaDispositivos  # Asegúrate de importar los modelos adecuados
+
+@csrf_exempt
+def agregar_multiples_dispositivos(request, id_ruta):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            print("📩 Datos recibidos:", data)  # 🔹 Debug: Verificar si los datos llegan correctamente
+            
+            dispositivos = data.get('dispositivos', [])
+            ruta = Rutas.objects.get(id_ruta=id_ruta)
+
+            for index, dispositivo in enumerate(dispositivos, start=1):
+                inventario = Inventario.objects.get(id_inventario=dispositivo['id'])
+                RutaDispositivos.objects.create(
+                    id_ruta=ruta,
+                    id_inventario=inventario,
+                    orden=index
+                )
+
+            return JsonResponse({'success': True})
+        
+        except Exception as e:
+            print("❌ Error en la API:", str(e))
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+from django.http import JsonResponse
+from .models import RutaDispositivos
+
+def obtener_dispositivos_ruta(request, id_ruta):
+    dispositivos = RutaDispositivos.objects.filter(id_ruta=id_ruta).select_related('id_inventario')
+    
+    data = []
+    for dispositivo in dispositivos:
+        data.append({
+            "id": dispositivo.id,
+            "id_ruta": id_ruta,
+            "id_inventario": dispositivo.id_inventario.id_inventario,
+            "nombre": dispositivo.id_inventario.nombre,  # 👈 Ahora enviamos el nombre correcto
+            "ip": dispositivo.id_inventario.ip,  # 👈 Ahora enviamos la IP correcta
+            "orden": dispositivo.orden
+        })
+    
+    return JsonResponse({"dispositivos": data})
+
+
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from .models import RutaDispositivos
+
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+from .models import RutaDispositivos, Rutas
+
+def actualizar_orden(request, id_ruta):
+    if request.method == "POST":
+        # Obtener la lista de dispositivos con el nuevo orden
+        dispositivos_data = request.POST.getlist('dispositivos[]')  # Recibimos la lista de dispositivos
+
+        if not dispositivos_data:
+            return JsonResponse({"error": "No se proporcionaron dispositivos para actualizar el orden."}, status=400)
+
+        # Actualizar el orden en la base de datos
+        for index, dispositivo in enumerate(dispositivos_data):
+            dispositivo_id = dispositivo.split("_")[0]  # Extraemos el id del dispositivo
+            try:
+                # Obtener el objeto RutaDispositivo y actualizar su orden
+                ruta_dispositivo = RutaDispositivos.objects.get(id_ruta=id_ruta, id_inventario=dispositivo_id)
+                ruta_dispositivo.orden = index + 1  # Asignamos el nuevo orden (index+1 para que empiece desde 1)
+                ruta_dispositivo.save()
+            except RutaDispositivos.DoesNotExist:
+                return JsonResponse({"error": f"Dispositivo con ID {dispositivo_id} no encontrado en la ruta."}, status=404)
+
+        return JsonResponse({"success": "Orden actualizado correctamente"}, status=200)
+
+    return JsonResponse({"error": "Método no permitido"}, status=405)
+

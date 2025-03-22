@@ -22,13 +22,23 @@
                 <label for="descripcion">Descripción</label>
                 <textarea class="form-control" id="descripcion" name="descripcion" rows="3"></textarea>
             </div>
-
-            <button type="submit" class="btn btn-success btn-block">Agregar Ruta</button>
+            <div class="form-row">
+                <div class="col-6">
+                    <button type="button" class="btn btn-secondary btn-block" onclick="window.history.back();">
+                        <i class="fas fa-arrow-left"></i> Regresar
+                    </button>
+                </div>
+                <div class="col-6">
+                    <button type="submit" class="btn btn-success btn-block">Agregar Ruta</button>
+                </div>
+            </div>
         </form>
     </div>
 
     <div id="mensaje" class="mt-3 text-center"></div>
 </div>
+<script src="https://kit.fontawesome.com/a076d05399.js"></script>
+
 
     <script>
         function getCSRFToken() {
@@ -80,4 +90,12 @@
         });
         </script>
 </body>
+<style>
+
+    body {
+        background-color: #f0f0f0; /* Fondo gris claro */
+    }
+</style>
+
+
 </html>
