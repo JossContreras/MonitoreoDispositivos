@@ -376,17 +376,18 @@ from django.shortcuts import render
 from .models import Rutas, RutaDispositivos, Inventario
 
 def lista_rutas(request):
-    # Obtenemos las rutas y sus inventarios asociados a través del modelo intermedio
+    # Obtenemos las rutas
     rutas = Rutas.objects.all()
 
     for ruta in rutas:
-        # Obtenemos los inventarios relacionados a través de RutaDispositivos
-        inventarios = Inventario.objects.filter(rutadispositivos__id_ruta=ruta.id_ruta)
+        # Obtenemos los inventarios relacionados a través de RutaDispositivos y los ordenamos por 'orden'
+        inventarios = Inventario.objects.filter(rutadispositivos__id_ruta=ruta.id_ruta).order_by('rutadispositivos__orden')
 
         # Agregamos los inventarios a cada ruta para usarlos en la plantilla
         ruta.inventarios = inventarios
 
     return render(request, 'lista_rutas.html', {'rutas': rutas})
+
 
 from django.shortcuts import render, get_object_or_404
 from .models import Rutas, RutaDispositivos
@@ -672,3 +673,28 @@ def actualizar_orden(request, id_ruta):
 
     return JsonResponse({"error": "Método no permitido"}, status=405)
 
+from django.http import JsonResponse
+from .models import RutaDispositivos
+import json
+
+def actualizar_orden_id(request, id_ruta):
+    if request.method == "POST":
+        try:
+            dispositivos_data = json.loads(request.body).get('dispositivos', [])
+
+            if not dispositivos_data:
+                return JsonResponse({"error": "No se proporcionaron dispositivos para actualizar el orden."}, status=400)
+
+            for index, dispositivo_id in enumerate(dispositivos_data):
+                try:
+                    ruta_dispositivo = RutaDispositivos.objects.get(id_ruta=id_ruta, id_inventario=dispositivo_id)
+                    ruta_dispositivo.orden = index + 1  # Orden nuevo comenzando desde 1
+                    ruta_dispositivo.save()
+                except RutaDispositivos.DoesNotExist:
+                    return JsonResponse({"error": f"Dispositivo con ID {dispositivo_id} no encontrado en la ruta."}, status=404)
+
+            return JsonResponse({"success": "Orden actualizado correctamente"}, status=200)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Datos inválidos proporcionados."}, status=400)
+
+    return JsonResponse({"error": "Método no permitido"}, status=405)

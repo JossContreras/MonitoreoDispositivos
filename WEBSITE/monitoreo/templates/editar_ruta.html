@@ -5,7 +5,8 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- Agregar Font Awesome -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
 
 <style>
     body {
@@ -59,6 +60,7 @@
     <div class="card custom-card mb-4">
         <h3 class="text-center text-secondary">🔗 Dispositivos Asociados</h3>
         <table class="table mt-3 table-bordered table-hover">
+            
             <thead class="table-dark">
                 <tr>
                     <th>Orden</th>
@@ -69,7 +71,8 @@
             </thead>
             <tbody id="tabla-dispositivos">
                 {% for relacion in dispositivos_ruta %}
-                <tr id="dispositivo-{{ relacion.id }}" data-id-inventario="{{ relacion.id_inventario.id_inventario }}">
+                <tr id="dispositivo-{{ relacion.id }}" data-id-inventario="{{ relacion.id_inventario.id_inventario }}"
+                    draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)">
                     <td class="orden-columna">{{ relacion.orden }}</td>
                     <td>{{ relacion.id_inventario.nombre }}</td>
                     <td>{{ relacion.id_inventario.ip }}</td>
@@ -81,7 +84,10 @@
                 </tr>
                 {% endfor %}
             </tbody>
+            <button class="btn btn-primary" onclick="guardarOrden({{ ruta.id_ruta }})">Guardar Orden</button>
         </table>
+    </div>
+    
         
     
         <!-- Botón para mostrar el formulario -->
@@ -574,7 +580,82 @@
             .catch(error => console.error("❌ Error al obtener dispositivos:", error));
     }
     
-    
+
+    let dispositivosOrdenados = [];
+
+// Permite que el elemento sea arrastrado
+function allowDrop(event) {
+    event.preventDefault();
+}
+
+// Establece el dato que se va a transferir (el id de la fila que se arrastra)
+function drag(event) {
+    event.dataTransfer.setData("text", event.target.id);
+}
+
+// Realiza la acción de "drop" (cuando se suelta el dispositivo)
+function drop(event) {
+    event.preventDefault();
+    const draggedId = event.dataTransfer.getData("text");
+    const draggedElement = document.getElementById(draggedId);
+    const targetElement = event.target.closest("tr");
+
+    if (targetElement && targetElement !== draggedElement) {
+        const parent = targetElement.parentNode;
+        const draggedIndex = Array.from(parent.children).indexOf(draggedElement);
+        const targetIndex = Array.from(parent.children).indexOf(targetElement);
+
+        // Coloca la fila arrastrada en la nueva posición
+        if (draggedIndex < targetIndex) {
+            parent.insertBefore(draggedElement, targetElement.nextSibling);
+        } else {
+            parent.insertBefore(draggedElement, targetElement);
+        }
+
+        // Actualiza el orden visual
+        actualizarOrden();
+    }
+}
+
+// Actualiza el orden visual y almacena los dispositivos en el nuevo orden
+function actualizarOrden() {
+    const rows = document.querySelectorAll("#tabla-dispositivos tr");
+    dispositivosOrdenados = Array.from(rows).map((row, index) => {
+        const idInventario = row.getAttribute("data-id-inventario");
+        row.querySelector(".orden-columna").textContent = index + 1; // Actualiza el orden visual
+        return parseInt(idInventario); // Guardar el idInventario en el orden correcto
+    });
+
+    console.log("📌 Orden actualizado localmente:", dispositivosOrdenados);
+}
+
+// Función para guardar el nuevo orden de los dispositivos en el servidor
+function guardarOrden(idRuta) {
+    if (!dispositivosOrdenados.length) {
+        alert("No hay dispositivos para guardar.");
+        return;
+    }
+
+    // Enviar el nuevo orden al servidor
+    fetch(`/monitoreo/ruta/${idRuta}/actualizar-orden-id/`, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ dispositivos: dispositivosOrdenados })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert("Orden guardado correctamente.");
+        } else {
+            alert("Error al guardar el orden.");
+        }
+    })
+    .catch(error => console.error("❌ Error en la solicitud:", error));
+}
+
 </script>
 
 {% endblock %}
