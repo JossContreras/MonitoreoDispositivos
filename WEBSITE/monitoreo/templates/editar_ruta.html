@@ -30,12 +30,30 @@
         font-weight: bold;
         padding: 12px 25px;
     }
+
+    /* Estilo del overlay */
+    #overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(147, 147, 147, 0.7); /* Fondo oscuro */
+        z-index: 998;
+        display: none;
+    }
+
+    /* Estilo para mantener la tarjeta encima del overlay */
+    .custom-card {
+        position: relative;
+        z-index: 999;
+    }
 </style>
 
 <div class="container mt-4 d-flex flex-column align-items-center">
-    <h2 class="mb-4 text-center text-primary">✏️ Editar Ruta</h2>
 
-    <div class="card custom-card mb-4">
+    <div class="card custom-card mb-3">
+        <h2 class="mb-4 text-center text-primary">Ruta</h2>
         <form method="POST">
             {% csrf_token %}
             <div class="mb-3">
@@ -55,12 +73,15 @@
         </form>
     </div>
 
+    <div id="overlay"></div> <!-- Overlay oscuro -->
 
 
     <div class="card custom-card mb-4">
-        <h3 class="text-center text-secondary">🔗 Dispositivos Asociados</h3>
+        <h3 class="text-center text-secondary">Dispositivos Vinculados</h3>
         <table class="table mt-3 table-bordered table-hover">
-            
+            <div class="mb-1">
+                <button id="activarEditarBtn" class="btn btn-warning" onclick="activarModoEdicion({{ ruta.id_ruta }})">Ordenar</button>
+            </div>
             <thead class="table-dark">
                 <tr>
                     <th>Orden</th>
@@ -84,7 +105,7 @@
                 </tr>
                 {% endfor %}
             </tbody>
-            <button class="btn btn-primary" onclick="guardarOrden({{ ruta.id_ruta }})">Guardar Orden</button>
+            <button id="guardarOrdenBtn" class="btn btn-primary" onclick="guardarOrden({{ ruta.id_ruta }})" style="display:none;">
         </table>
     </div>
     
@@ -655,6 +676,37 @@ function guardarOrden(idRuta) {
     })
     .catch(error => console.error("❌ Error en la solicitud:", error));
 }
+
+let modoEdicion = false;
+
+function activarModoEdicion(rutaId) {
+    modoEdicion = !modoEdicion;
+
+    // Cambiar el estado de los dispositivos (arrastrables o no)
+    let dispositivos = document.querySelectorAll('#tabla-dispositivos tr');
+    dispositivos.forEach(dispositivo => {
+        dispositivo.draggable = modoEdicion;
+    });
+
+    // Cambiar el texto del botón de edición
+    const editarBtn = document.getElementById('activarEditarBtn');
+    editarBtn.innerText = modoEdicion ? 'Desactivar Edición' : 'Ordenar';
+
+    // Mostrar u ocultar el overlay
+    document.getElementById('overlay').style.display = modoEdicion ? 'block' : 'none';
+
+    // Desactivar o activar todos los botones excepto el de editar
+    const botones = document.querySelectorAll("button:not(#activarEditarBtn)");
+    botones.forEach(boton => {
+        boton.disabled = modoEdicion;
+    });
+
+    // Si se está desactivando la edición, se llama a guardarOrden automáticamente
+    if (!modoEdicion) {
+        guardarOrden(rutaId);  // Aquí llamas a tu función de guardar orden
+    }
+}
+
 
 </script>
 

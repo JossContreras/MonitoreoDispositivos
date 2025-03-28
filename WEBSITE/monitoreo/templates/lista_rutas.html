@@ -3,8 +3,8 @@
     <h2 class="mb-4 text-center">Rutas establecidas</h2>
 
     <div class="table-responsive">
-        <!-- Botón "Agregar Ruta Definida" en la esquina superior derecha -->
-    <button class="btn-agregar" onclick="window.location.href='/monitoreo/ruta/agregar/ruta_definida'">Crear nueva ruta</button>
+    <a href="{% url 'formulario_agregar_ruta' %}" class="btn btn-primary btn-agregar">Crear nueva ruta</a>
+
         <table class="table table-hover table-striped">
             
             <thead>
