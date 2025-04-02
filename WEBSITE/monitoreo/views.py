@@ -936,3 +936,67 @@ def filtro_dispositivos(request):
     }
 
     return render(request, 'reportes.html', context)
+
+import openpyxl
+from django.http import HttpResponse
+from .models import Inventario, DetallesTecnicos, Ubicacion
+
+import openpyxl
+from django.http import HttpResponse
+from .models import Inventario, DetallesTecnicos, Ubicacion
+
+def generar_excel(request):
+    dispositivos = Inventario.objects.all()
+
+    # Recuperamos los filtros de la URL
+    filtro_modelo = request.GET.get('modelo')
+    filtro_sistema = request.GET.get('sistema_operativo')
+    filtro_tipo = request.GET.get('tipo_elemento')
+    filtro_ubicacion = request.GET.get('ubicacion')
+
+    # Aplicar los filtros según los parámetros pasados
+    if filtro_modelo:
+        dispositivos = dispositivos.filter(detallestecnicos__modelo=filtro_modelo)
+    if filtro_sistema:
+        dispositivos = dispositivos.filter(detallestecnicos__sistema_operativo=filtro_sistema)
+    if filtro_tipo:
+        dispositivos = dispositivos.filter(tipo_elemento=filtro_tipo)
+    if filtro_ubicacion:
+        dispositivos = dispositivos.filter(id_ubicacion=filtro_ubicacion)
+
+    # Crear un libro de trabajo de Excel
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Dispositivos Filtrados"
+
+    # Escribir encabezados en el archivo Excel
+    encabezados = ["Nombre", "Modelo", "Tipo", "Ubicación", "Sistema Operativo", "Número de Serie"]
+    ws.append(encabezados)
+
+    # Llenar los datos de los dispositivos en el archivo Excel
+    for dispositivo in dispositivos:
+        detalles_tecnicos = dispositivo.detallestecnicos_set.first()  # Relación inversa
+
+        if detalles_tecnicos:
+            ws.append([dispositivo.nombre,
+                       detalles_tecnicos.modelo if detalles_tecnicos.modelo else "N/A",
+                       dispositivo.tipo_elemento,
+                       dispositivo.id_ubicacion.nombre_ubicacion,
+                       detalles_tecnicos.sistema_operativo if detalles_tecnicos.sistema_operativo else "N/A",
+                       detalles_tecnicos.numero_serie if detalles_tecnicos.numero_serie else "N/A"])
+        else:
+            ws.append([dispositivo.nombre,
+                       "N/A",
+                       dispositivo.tipo_elemento,
+                       dispositivo.id_ubicacion.nombre_ubicacion,
+                       "N/A",
+                       "N/A"])
+
+    # Crear la respuesta HTTP con el archivo Excel como contenido
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="dispositivos_filtrados.xlsx"'
+
+    # Guardar el archivo Excel en la respuesta
+    wb.save(response)
+    
+    return response
