@@ -3,7 +3,7 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f5f7fa;
+    background-color: #0e0d0d;
 }
 
 /* 🔹 Contenedor Principal */
@@ -13,7 +13,7 @@ body {
         margin: 0;
         padding: 0;
         background-color: #f4f7fc; /* Fondo suave para mayor confort */
-        color: #333;
+        color: #080808;
     }
     
     /* 🔹 Contenedor Principal */

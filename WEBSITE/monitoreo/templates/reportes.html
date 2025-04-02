@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filtrar Dispositivos</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+</head>
+<body class="bg-gray-100 p-4">
+    <div class="max-w-7xl mx-auto bg-white p-6 rounded-lg shadow-md">
+        {% include 'navegacion.html' %}
+        <div class="ruta-actual mt-3 mb-4">
+            <span><a href="{% url 'monitoreo_principal' %}" class="breadcrumb-link">Monitoreo</a></span>
+            <span class="breadcrumb-separator">❯</span>
+            <span class="breadcrumb-current">Generar Reporte</span>
+        </div>
+        <h1 class="text-2xl font-bold mb-4">Filtrar Dispositivos</h1>
+        <form method="GET" class="space-y-4">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label for="modelo">Modelo:</label>
+                    <select name="modelo" class="w-full mt-1 p-2 border border-gray-300 rounded">
+                        <option value="">Seleccione un modelo</option>
+                        {% for modelo in modelos %}
+                            <option value="{{ modelo }}" {% if modelo == request.GET.modelo %}selected{% endif %}>{{ modelo }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label for="sistema_operativo">Sistema Operativo:</label>
+                    <select name="sistema_operativo" class="w-full mt-1 p-2 border border-gray-300 rounded">
+                        <option value="">Seleccione un sistema operativo</option>
+                        {% for sistema in sistemas_operativos %}
+                            <option value="{{ sistema }}" {% if sistema == request.GET.sistema_operativo %}selected{% endif %}>{{ sistema }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label for="tipo_elemento">Tipo de Elemento:</label>
+                    <select name="tipo_elemento" class="w-full mt-1 p-2 border border-gray-300 rounded">
+                        <option value="">Seleccione un tipo</option>
+                        {% for tipo in tipos_elemento %}
+                            <option value="{{ tipo }}" {% if tipo == request.GET.tipo_elemento %}selected{% endif %}>{{ tipo }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label for="ubicacion">Ubicación:</label>
+                    <select name="ubicacion" class="w-full mt-1 p-2 border border-gray-300 rounded">
+                        <option value="">Seleccione una ubicación</option>
+                        {% for ubicacion in ubicaciones %}
+                            <option value="{{ ubicacion.id_ubicacion }}" {% if ubicacion.id_ubicacion == request.GET.ubicacion %}selected{% endif %}>{{ ubicacion.nombre_ubicacion }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="bg-blue-500 text-white p-2 rounded">Filtrar</button>
+                <a href="{% url 'generar_pdf' %}?modelo={{ request.GET.modelo }}&sistema_operativo={{ request.GET.sistema_operativo }}&tipo_elemento={{ request.GET.tipo_elemento }}&ubicacion={{ request.GET.ubicacion }}" class="mt-4 inline-block bg-green-500 text-white p-2 rounded">
+                    Generar PDF
+                </a> 
+            </div>
+        </form>
+
+        {% if dispositivos %}
+            <div class="mt-6">
+                <h2 class="text-xl font-bold mb-2">Resultados</h2>
+                <table class="min-w-full bg-white border border-gray-200">
+                    <thead>
+                        <tr>
+                            <th class="py-2 px-4 border-b">Nombre</th>
+                            <th class="py-2 px-4 border-b">Tipo</th>
+                            <th class="py-2 px-4 border-b">Ubicación</th>
+                            <th class="py-2 px-4 border-b">IP</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dispositivo in dispositivos %}
+                            <tr>
+                                <td class="py-2 px-4 border-b">{{ dispositivo.nombre }}</td>
+                                <td class="py-2 px-4 border-b">{{ dispositivo.tipo_elemento }}</td>
+                                <td class="py-2 px-4 border-b">{{ dispositivo.id_ubicacion.nombre_ubicacion }}</td>
+                                <td class="py-2 px-4 border-b">{{ dispositivo.ip }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>            
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

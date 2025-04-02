@@ -1,17 +1,30 @@
 {% load static %}
 {% include 'mon_red.html' %}
+{% include 'nav_bar.html' %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventario por Ubicación</title>
+    <title>Dispositivos</title>
     <link rel="stylesheet" href="{% static 'css/monitoreo_tr.css' %}">
     <script src="{% static 'js/monitoreo_tr.js' %}" defer></script>
 </head>
+<style>
+    body {
+        background-color: #f0f0f0; /* Fondo gris claro */
+    }
+</style>
 <body>
     <div class="container">
-        <h1>Inventario por Ubicación</h1>
+        
+        {% include 'navegacion.html' %}
+        <div class="ruta-actual mt-3 mb-4">
+            <span><a href="{% url 'monitoreo_principal' %}" class="breadcrumb-link">Monitoreo</a></span>
+            <span class="breadcrumb-separator">❯</span>
+            <span class="breadcrumb-current">Dispositivos</span>
+        </div>
+        <h1>Dispositivos</h1>
 
         <!-- 🔹 Tarjeta de Filtros (Desplegable) -->
         <div class="card filtros-card">

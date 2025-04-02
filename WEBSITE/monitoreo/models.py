@@ -183,6 +183,16 @@ class HistorialCambios(models.Model):
         db_table = 'historial_cambios'
 
 
+class HistorialRutaDispositivo(models.Model):
+    id_ruta = models.ForeignKey('Rutas', models.DO_NOTHING, db_column='id_ruta')
+    dispositivos_con_error = models.TextField(blank=True, null=True)
+    fecha = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'historial_ruta_dispositivo'
+
+
 class Incidentes(models.Model):
     id_incidentes = models.AutoField(primary_key=True)
     id_inventario = models.ForeignKey('Inventario', models.DO_NOTHING, db_column='id_inventario')
@@ -243,7 +253,6 @@ class Monitoreo(models.Model):
 
 
 class RutaDispositivos(models.Model):
-    id = models.AutoField(primary_key=True)
     id_ruta = models.ForeignKey('Rutas', models.DO_NOTHING, db_column='id_ruta')
     id_inventario = models.ForeignKey(Inventario, models.DO_NOTHING, db_column='id_inventario')
     orden = models.IntegerField()

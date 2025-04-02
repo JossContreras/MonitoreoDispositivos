@@ -698,3 +698,241 @@ def actualizar_orden_id(request, id_ruta):
             return JsonResponse({"error": "Datos inválidos proporcionados."}, status=400)
 
     return JsonResponse({"error": "Método no permitido"}, status=405)
+
+from django.shortcuts import render
+
+# Vista para la página principal de monitoreofrom django.shortcuts import render
+
+# Asegúrate de que la vista 'monitoreo' esté definida aquí
+def monitoreointerfaz(request):
+    context = {
+        'num_rutas': 10,  # Puedes personalizar con tus propios datos
+        'num_dispositivos': 25,
+        'estado_red': "Operativa",
+    }
+    return render(request, 'home.html', context)
+
+
+def navbarinterfaz(request):
+    return render(request, 'nav_bar.html')
+
+
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from .models import HistorialRutaDispositivo
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+@csrf_exempt  # Si no estás usando CSRF en las peticiones AJAX, de lo contrario elimínalo
+
+def guardar_historial(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        ruta_id = data.get('ruta_id')
+        dispositivos_con_error = data.get('dispositivos_con_error')
+        fecha = data.get('fecha')
+
+        # Crear un nuevo registro en la tabla Historial_Ruta_Dispositivo
+        historial = HistorialRutaDispositivo(
+            id_ruta=ruta_id,
+            dispositivos_con_error=','.join(map(str, dispositivos_con_error)),  # Convertir la lista a cadena
+            fecha=fecha
+        )
+        historial.save()
+
+        return JsonResponse({'status': 'success', 'message': 'Historial agregado correctamente'}, status=200)
+    return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
+
+from django.shortcuts import render
+from .models import Inventario, Ubicacion
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+
+# Vista para mostrar la interfaz de filtros
+from django.shortcuts import render
+from .models import Inventario, Ubicacion
+
+def interfaz_filtros(request):
+    # Obtener todos los dispositivos
+    dispositivos = Inventario.objects.all()
+
+    # Obtener listas únicas para cada campo (para poblar los dropdowns)
+    modelos = Inventario.objects.values_list('modelo', flat=True).distinct()
+    sistemas_operativos = Inventario.objects.values_list('sistema_operativo', flat=True).distinct()
+    tipos_elementos = Inventario.objects.values_list('tipo_elemento', flat=True).distinct()
+    ubicaciones = Ubicacion.objects.all()
+
+    # Filtrar por los valores seleccionados
+    modelo = request.GET.get('modelo', '')
+    sistema_operativo = request.GET.get('sistema_operativo', '')
+    tipo_elemento = request.GET.get('tipo_elemento', '')
+    ubicacion = request.GET.get('ubicacion', '')
+
+    if modelo:
+        dispositivos = dispositivos.filter(modelo=modelo)
+    if sistema_operativo:
+        dispositivos = dispositivos.filter(sistema_operativo=sistema_operativo)
+    if tipo_elemento:
+        dispositivos = dispositivos.filter(tipo_elemento=tipo_elemento)
+    if ubicacion:
+        dispositivos = dispositivos.filter(id_ubicacion__nombre_ubicacion=ubicacion)
+
+    context = {
+        'dispositivos': dispositivos,
+        'modelos': modelos,
+        'sistemas_operativos': sistemas_operativos,
+        'tipos_elementos': tipos_elementos,
+        'ubicaciones': ubicaciones,
+    }
+    return render(request, 'reportes.html', context)
+
+
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import letter, landscape
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib import colors
+
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import letter, landscape
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib import colors
+
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import letter, landscape
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib import colors
+
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import letter, landscape
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib import colors
+
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import letter, landscape
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import letter, landscape
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib import colors
+from .models import Inventario, DetallesTecnicos
+
+def generar_pdf(request):
+    dispositivos = Inventario.objects.all()  # Obtener todos los dispositivos inicialmente
+
+    # Obtener los filtros de la URL (si existen)
+    filtro_modelo = request.GET.get('modelo')
+    filtro_sistema = request.GET.get('sistema_operativo')
+    filtro_tipo = request.GET.get('tipo_elemento')
+    filtro_ubicacion = request.GET.get('ubicacion')
+
+    # Aplicar los filtros si existen
+    if filtro_modelo:
+        dispositivos = dispositivos.filter(detallestecnicos__modelo=filtro_modelo)
+    if filtro_sistema:
+        dispositivos = dispositivos.filter(detallestecnicos__sistema_operativo=filtro_sistema)
+    if filtro_tipo:
+        dispositivos = dispositivos.filter(tipo_elemento=filtro_tipo)
+    if filtro_ubicacion:
+        dispositivos = dispositivos.filter(id_ubicacion=filtro_ubicacion)
+
+    # Crear el PDF
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; filename="dispositivos_filtrados.pdf"'
+
+    # Usar `landscape(letter)` para orientación horizontal (paisaje)
+    p = SimpleDocTemplate(response, pagesize=landscape(letter))  # Esto asegura que sea paisaje
+    width, height = landscape(letter)  # Esto toma el tamaño de la página en orientación paisaje
+
+    # Datos para la tabla
+    data = [["Nombre", "Modelo", "Tipo", "Ubicación", "Sistema Operativo", "Número de Serie"]]
+
+    for dispositivo in dispositivos:
+        # Acceder a los detalles técnicos del dispositivo
+        detalles_tecnicos = dispositivo.detallestecnicos_set.first()  # Relación inversa
+
+        # Agregar los datos a la tabla
+        if detalles_tecnicos:
+            data.append([dispositivo.nombre,
+                         detalles_tecnicos.modelo if detalles_tecnicos.modelo else "N/A",
+                         dispositivo.tipo_elemento,
+                         dispositivo.id_ubicacion.nombre_ubicacion,
+                         detalles_tecnicos.sistema_operativo if detalles_tecnicos.sistema_operativo else "N/A",
+                         detalles_tecnicos.numero_serie if detalles_tecnicos.numero_serie else "N/A"])
+        else:
+            data.append([dispositivo.nombre,
+                         "N/A",
+                         dispositivo.tipo_elemento,
+                         dispositivo.id_ubicacion.nombre_ubicacion,
+                         "N/A",
+                         "N/A"])
+
+    # Crear la tabla
+    table = Table(data, colWidths=[width * 0.18, width * 0.12, width * 0.12, width * 0.18, width * 0.18, width * 0.18])
+
+    # Establecer los estilos de la tabla
+    table.setStyle(TableStyle([
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),  # Rejilla de la tabla
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),  # Color de fondo de la cabecera
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),  # Color del texto de la cabecera
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  # Alinear todo al centro
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),  # Usar Arial como fuente
+        ('FONTSIZE', (0, 0), (-1, -1), 10),  # Fuente pequeña (Arial tamaño 10)
+        ('TOPPADDING', (0, 0), (-1, -1), 5),  # Espaciado superior de las celdas
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),  # Espaciado inferior de las celdas
+        ('LEFTPADDING', (0, 0), (-1, -1), 5),  # Espaciado izquierdo de las celdas
+        ('RIGHTPADDING', (0, 0), (-1, -1), 5),  # Espaciado derecho de las celdas
+        ('WORDSPACE', (0, 0), (-1, -1), 2),  # Separación entre palabras (para mejorar ajuste)
+        ('WORDWRAP', (0, 0), (-1, -1), True),  # Ajustar el texto
+    ]))
+
+    # Construir el documento PDF
+    elements = [table]
+    p.build(elements)
+
+    return response
+
+from django.shortcuts import render
+from .models import DetallesTecnicos, Inventario, Ubicacion
+
+from django.shortcuts import render
+from .models import DetallesTecnicos, Inventario, Ubicacion
+
+from django.shortcuts import render
+from .models import Inventario, DetallesTecnicos, Ubicacion
+
+def filtro_dispositivos(request):
+    dispositivos = Inventario.objects.all()
+    ubicaciones = Ubicacion.objects.all()
+    modelos = DetallesTecnicos.objects.values_list('modelo', flat=True).distinct()
+    sistemas_operativos = DetallesTecnicos.objects.values_list('sistema_operativo', flat=True).distinct()
+    tipos_elemento = Inventario.objects.values_list('tipo_elemento', flat=True).distinct()
+
+    # Ahora recibimos los filtros usando GET
+    filtro_modelo = request.GET.get('modelo')
+    filtro_sistema = request.GET.get('sistema_operativo')
+    filtro_tipo = request.GET.get('tipo_elemento')
+    filtro_ubicacion = request.GET.get('ubicacion')
+
+    # Aplicamos los filtros si los parámetros están presentes
+    if filtro_modelo:
+        dispositivos = dispositivos.filter(detallestecnicos__modelo=filtro_modelo)
+    if filtro_sistema:
+        dispositivos = dispositivos.filter(detallestecnicos__sistema_operativo=filtro_sistema)
+    if filtro_tipo:
+        dispositivos = dispositivos.filter(tipo_elemento=filtro_tipo)
+    if filtro_ubicacion:
+        dispositivos = dispositivos.filter(id_ubicacion=filtro_ubicacion)
+
+    context = {
+        'dispositivos': dispositivos,
+        'ubicaciones': ubicaciones,
+        'modelos': modelos,
+        'sistemas_operativos': sistemas_operativos,
+        'tipos_elemento': tipos_elemento,
+    }
+
+    return render(request, 'reportes.html', context)

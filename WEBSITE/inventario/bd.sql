@@ -114,3 +114,12 @@ CREATE TABLE Ruta_Dispositivos (
     FOREIGN KEY (id_inventario) REFERENCES Inventario(id_inventario) ON DELETE CASCADE
 );
 
+-- Tabla Historial_Ruta_Dispositivo
+CREATE TABLE Historial_Ruta_Dispositivo (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    id_ruta INT NOT NULL,
+    dispositivos_con_error TEXT,  -- Almacena los IDs de los dispositivos con errores, separados por comas
+    fecha DATETIME DEFAULT CURRENT_TIMESTAMP, -- Fecha y hora del historial
+    FOREIGN KEY (id_ruta) REFERENCES Rutas(id_ruta) ON DELETE CASCADE
+);
+

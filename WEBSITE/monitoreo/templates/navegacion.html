@@ -1,0 +1,53 @@
+<style>
+    
+    .ruta-actual {
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 20px;
+        background-color: #f0f0f0;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: box-shadow 0.3s, background-color 0.3s;
+    }
+
+    .ruta-actual:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        background-color: #e6e6e6;
+    }
+
+    .breadcrumb-link {
+        text-decoration: none;
+        color: #007bff;
+        position: relative;
+        transition: color 0.3s;
+    }
+
+    .breadcrumb-link:hover {
+        color: #0056b3;
+    }
+
+    .breadcrumb-link::after {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 2px;
+        background-color: #007bff;
+        bottom: -3px;
+        left: 0;
+        transition: transform 0.3s;
+        transform: scaleX(0);
+        transform-origin: right;
+    }
+
+    .breadcrumb-link:hover::after {
+        transform: scaleX(1);
+        transform-origin: left;
+    }
+
+    .breadcrumb-separator {
+        color: #6c757d;
+        transition: all 0.3s;
+    }
+</style>

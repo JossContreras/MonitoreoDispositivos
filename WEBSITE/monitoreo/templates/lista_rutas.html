@@ -1,10 +1,18 @@
 {% block content %}
+{% load static %}
+{% include 'nav_bar.html' %}
 <div class="container mt-5">
-    <h2 class="mb-4 text-center">Rutas establecidas</h2>
+    <div id="spinner"></div>
+    <h2 class="mb-4 text-center">Rutas Definidas</h2>
 
     <div class="table-responsive">
-    <a href="{% url 'formulario_agregar_ruta' %}" class="btn btn-primary btn-agregar">Crear nueva ruta</a>
-
+    {% include 'navegacion.html' %}
+        <div class="ruta-actual mt-3 mb-4">
+            <span><a href="{% url 'monitoreo_principal' %}" class="breadcrumb-link">Monitoreo</a></span>
+            <span class="breadcrumb-separator">❯</span>
+            <span class="breadcrumb-current">Rutas</span>
+        </div>
+        <a href="{% url 'formulario_agregar_ruta' %}" class="btn btn-primary btn-agregar">Crear nueva ruta</a>
         <table class="table table-hover table-striped">
             
             <thead>
@@ -100,99 +108,191 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css">
 
 <script>
+    
     function hacerPingTodos(rutaId) {
-    // Obtener todos los dispositivos de la ruta
-    let dispositivos = document.querySelectorAll(`#dispositivos-${rutaId} .dispositivo`);
-
-    // Deshabilitar el botón mientras se realiza el ping
-    let botonTodos = document.querySelector(`#modal_${rutaId} .btn-success`);
-    botonTodos.disabled = true;
-    botonTodos.innerText = 'Pinging...';
-
-    dispositivos.forEach((dispositivo, index) => {
-        let ip = dispositivo.getAttribute("data-ip");
-        setTimeout(() => {
-            hacerPingIndividual(rutaId, dispositivo.id.split('-')[2], ip);
-        }, index * 1500); // Esperar un poco entre cada ping
-    });
-
-    // Restaurar el estado del botón después de hacer ping a todos
-    setTimeout(() => {
-        botonTodos.disabled = false;
-        botonTodos.innerText = 'Hacer Ping a Todos';
-    }, dispositivos.length * 1500);
-}
-
-function hacerPingIndividual(rutaId, idInventario, ip, intentos = 0) {
-    let dispositivo = document.getElementById(`dispositivo-${rutaId}-${idInventario}`);
-    let errorMessageElement = dispositivo.querySelector('.error-message');
-    let statusIndicator = dispositivo.querySelector('.status-indicator');
-    let pingTimeElement = dispositivo.querySelector('.ping-time');
-
-    // Mostrar animación de progreso
-    dispositivo.classList.add('ping-en-progreso');
-    statusIndicator.innerText = ` - Ping en progreso... (Intento ${intentos + 1}/5)`;
-    errorMessageElement.style.display = 'none';
-
-    // Empezamos a medir el tiempo
-    let startTime = Date.now();
-
-    fetch("/monitoreo/verificar_estado/?ip=" + ip)
-        .then(response => response.json())
-        .then(data => {
-            let endTime = Date.now();
-            let duration = endTime - startTime; // Calculamos el tiempo de respuesta
-
-            dispositivo.classList.remove('ping-en-progreso');
-            pingTimeElement.innerText = ` - Tiempo: ${duration} ms`;
-
-            if (data.estado === "exito") {
-                statusIndicator.innerText = ' - Activo';
-                dispositivo.classList.add('estado-activo');
-                dispositivo.classList.remove('estado-error', 'estado-inactivo');
-            } else {
-                if (intentos < 4) {
-                    // Reintentar después de un pequeño retraso (1.5 segundos)
-                    setTimeout(() => {
-                        hacerPingIndividual(rutaId, idInventario, ip, intentos + 1);
-                    }, 1500);
-                } else {
-                    // Si después de 5 intentos sigue fallando, marcar como error
-                    statusIndicator.innerText = ' - Error';
-                    errorMessageElement.style.display = 'block';
-                    errorMessageElement.innerHTML = `Motivo: ${data.motivo || "Error desconocido"}`;
-                    dispositivo.classList.add('estado-error');
-                    dispositivo.classList.remove('estado-activo', 'estado-inactivo');
-                }
-            }
-
-            // Suavizar la aparición de la información
-            pingTimeElement.classList.add('animate-fade');
-            statusIndicator.classList.add('animate-fade');
-        })
-        .catch(error => {
-            if (intentos < 4) {
-                // Reintentar después de un pequeño retraso
+        // Obtener todos los dispositivos de la ruta
+        let dispositivos = document.querySelectorAll(`#dispositivos-${rutaId} .dispositivo`);
+        dispositivos = Array.from(dispositivos);  // Convertir NodeList a Array para usar .map()
+        
+        // Deshabilitar el botón mientras se realiza el ping
+        let botonTodos = document.querySelector(`#modal_${rutaId} .btn-success`);
+        botonTodos.disabled = true;
+        botonTodos.innerText = 'Pinging...';
+    
+        // Crear un arreglo para almacenar los dispositivos con error
+        let dispositivosConError = [];
+        let dispositivosProcesados = 0;  // Contador de dispositivos procesados
+    
+        // Función para manejar el callback cuando el ping de un dispositivo ha fallado
+        function agregarDispositivoConError(idInventario) {
+            dispositivosConError.push(idInventario);
+        }
+    
+        dispositivos.forEach((dispositivo, index) => {
+            let ip = dispositivo.getAttribute("data-ip");
+            setTimeout(() => {
+                hacerPingIndividual(rutaId, dispositivo.id.split('-')[2], ip, 0, agregarDispositivoConError);  // Pasamos la función callback
+            }, index * 1500); // Esperar un poco entre cada ping
+        });
+    
+        // Esperar hasta que todos los dispositivos hayan sido procesados
+        let interval = setInterval(() => {
+            dispositivosProcesados++;
+            if (dispositivosProcesados === dispositivos.length) {
+                clearInterval(interval);  // Detener la comprobación de estado
+    
+                // Después de que todos los dispositivos hayan sido procesados, agregamos al historial
+                agregarAlHistorial(rutaId, dispositivosConError);
+    
+                // Restaurar el estado del botón después de hacer ping a todos
                 setTimeout(() => {
-                    hacerPingIndividual(rutaId, idInventario, ip, intentos + 1);
-                }, 1500);
-            } else {
+                    botonTodos.disabled = false;
+                    botonTodos.innerText = 'Hacer Ping a Todos';
+                }, 500);  // Pequeña demora para restaurar el estado del botón
+            }
+        }, 1500);  // Verifica cada 1.5 segundos si se han procesado todos los dispositivos
+    }
+    
+    function hacerPingIndividual(rutaId, idInventario, ip, intentos = 0, dispositivosConError) {
+        let dispositivo = document.getElementById(`dispositivo-${rutaId}-${idInventario}`);
+        let errorMessageElement = dispositivo.querySelector('.error-message');
+        let statusIndicator = dispositivo.querySelector('.status-indicator');
+        let pingTimeElement = dispositivo.querySelector('.ping-time');
+    
+        // Mostrar animación de progreso
+        dispositivo.classList.add('ping-en-progreso');
+        statusIndicator.innerText = ` - Ping en progreso... (Intento ${intentos + 1}/5)`;
+        errorMessageElement.style.display = 'none';
+    
+        // Empezamos a medir el tiempo
+        let startTime = Date.now();
+    
+        fetch("/monitoreo/verificar_estado/?ip=" + ip)
+            .then(response => response.json())
+            .then(data => {
                 let endTime = Date.now();
-                let duration = endTime - startTime;
-
+                let duration = endTime - startTime; // Calculamos el tiempo de respuesta
+    
                 dispositivo.classList.remove('ping-en-progreso');
                 pingTimeElement.innerText = ` - Tiempo: ${duration} ms`;
-                statusIndicator.innerText = ' - Error al hacer ping';
-                errorMessageElement.style.display = 'block';
-                errorMessageElement.innerText = 'Hubo un problema al intentar hacer ping después de 5 intentos.';
-                dispositivo.classList.add('estado-error');
-                dispositivo.classList.remove('estado-activo', 'estado-inactivo');
+    
+                if (data.estado === "exito") {
+                    statusIndicator.innerText = ' - Activo';
+                    dispositivo.classList.add('estado-activo');
+                    dispositivo.classList.remove('estado-error', 'estado-inactivo');
+                } else {
+                    if (intentos < 4) {
+                        // Reintentar después de un pequeño retraso (1.5 segundos)
+                        setTimeout(() => {
+                            hacerPingIndividual(rutaId, idInventario, ip, intentos + 1, dispositivosConError);
+                        }, 1500);
+                    } else {
+                        // Si después de 5 intentos sigue fallando, marcar como error
+                        statusIndicator.innerText = ' - Error';
+                        errorMessageElement.style.display = 'block';
+                        errorMessageElement.innerHTML = `Motivo: ${data.motivo || "Error desconocido"}`;
+                        dispositivo.classList.add('estado-error');
+                        dispositivo.classList.remove('estado-activo', 'estado-inactivo');
+    
+                        // Agregar al historial si falló
+                        dispositivosConError.push(idInventario);
+                    }
+                }
+    
+                // Suavizar la aparición de la información
+                pingTimeElement.classList.add('animate-fade');
+                statusIndicator.classList.add('animate-fade');
+            })
+            .catch(error => {
+                if (intentos < 4) {
+                    // Reintentar después de un pequeño retraso
+                    setTimeout(() => {
+                        hacerPingIndividual(rutaId, idInventario, ip, intentos + 1, dispositivosConError);
+                    }, 1500);
+                } else {
+                    let endTime = Date.now();
+                    let duration = endTime - startTime;
+    
+                    dispositivo.classList.remove('ping-en-progreso');
+                    pingTimeElement.innerText = ` - Tiempo: ${duration} ms`;
+                    statusIndicator.innerText = ' - Error al hacer ping';
+                    errorMessageElement.style.display = 'block';
+                    errorMessageElement.innerText = 'Hubo un problema al intentar hacer ping después de 5 intentos.';
+                    dispositivo.classList.add('estado-error');
+                    dispositivo.classList.remove('estado-activo', 'estado-inactivo');
+    
+                    // Agregar al historial si falló
+                    dispositivosConError.push(idInventario);
+                }
+            });
+    }
+    
+    
+
+    
+    function agregarAlHistorial(rutaId, dispositivosConError) {
+        // Verifica si hay dispositivos con error
+        console.log('Dispositivos con error:', dispositivosConError);
+    
+        if (dispositivosConError.length === 0) {
+            console.log('No hay dispositivos con error para agregar al historial.');
+            return;  // No hacer nada si no hay dispositivos con error
+        }
+    
+        // Aquí puedes hacer una solicitud a tu backend para agregar los dispositivos con error al historial
+        fetch(`/monitoreo/guardar_historial/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                ruta_id: rutaId,
+                dispositivos_con_error: dispositivosConError,
+                fecha: new Date().toISOString(),
+            }),
+        })
+        .then(response => {
+            console.log('Respuesta del servidor:', response);
+            if (response.ok) {
+                return response.json();  // Parsear la respuesta a JSON
+            } else {
+                throw new Error('Error en la solicitud al servidor');
             }
+        })
+        .then(data => {
+            console.log('Historial actualizado', data);
+        })
+        .catch(error => {
+            console.error('Error al agregar al historial:', error);
         });
-}
+    }
+    
+    
+
+window.onload = function() {
+    var spinner = document.getElementById("spinner");
+    spinner.style.display = "none"; // Oculta el spinner cuando la página esté lista
+};  
 </script>
 
 <style>
+    #spinner {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 2s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
     
     body {
         background-color: #f0f0f0; /* Fondo gris claro */

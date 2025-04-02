@@ -1,0 +1,23 @@
+{% if dispositivos %}
+    <h2 class="text-xl font-bold mb-2">Resultados</h2>
+    <table class="min-w-full bg-white border border-gray-200">
+        <thead>
+            <tr>
+                <th class="py-2 px-4 border-b">Nombre</th>
+                <th class="py-2 px-4 border-b">Tipo</th>
+                <th class="py-2 px-4 border-b">Ubicación</th>
+                <th class="py-2 px-4 border-b">IP</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dispositivo in dispositivos %}
+                <tr>
+                    <td class="py-2 px-4 border-b">{{ dispositivo.nombre }}</td>
+                    <td class="py-2 px-4 border-b">{{ dispositivo.tipo_elemento }}</td>
+                    <td class="py-2 px-4 border-b">{{ dispositivo.id_ubicacion.nombre_ubicacion }}</td>
+                    <td class="py-2 px-4 border-b">{{ dispositivo.ip }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}

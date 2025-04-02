@@ -12,8 +12,16 @@
     }
 </style>
 <div class="container mt-5">
+    
+    {% include 'navegacion.html' %}
+    <div class="ruta-actual mt-3 mb-4">
+        <span><a href="{% url 'monitoreo_principal' %}" class="breadcrumb-link">Monitoreo</a></span>
+        <span class="breadcrumb-separator">❯</span>
+        <span><a href="{% url 'lista_rutas' %}" class="breadcrumb-link">Rutas</a></span>
+        <span class="breadcrumb-separator">❯</span>
+        <span class="breadcrumb-current">Eliminar Ruta</span>
+    </div>
     <h2 class="text-center mb-4">¿Estás seguro de que deseas eliminar esta ruta?</h2>
-
     <!-- Información de la ruta -->
     <div class="row">
         <div class="col-md-6 offset-md-3">
