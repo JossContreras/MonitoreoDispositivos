@@ -944,17 +944,24 @@ from .models import Inventario, DetallesTecnicos, Ubicacion
 import openpyxl
 from django.http import HttpResponse
 from .models import Inventario, DetallesTecnicos, Ubicacion
+from django.http import HttpResponse
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment
+from openpyxl.utils import get_column_letter
+from datetime import datetime
+
+from .models import Inventario, DetallesTecnicos, Configuracion
 
 def generar_excel(request):
     dispositivos = Inventario.objects.all()
 
-    # Recuperamos los filtros de la URL
+    # Recuperar filtros desde la URL
     filtro_modelo = request.GET.get('modelo')
     filtro_sistema = request.GET.get('sistema_operativo')
     filtro_tipo = request.GET.get('tipo_elemento')
     filtro_ubicacion = request.GET.get('ubicacion')
 
-    # Aplicar los filtros según los parámetros pasados
+    # Aplicar filtros
     if filtro_modelo:
         dispositivos = dispositivos.filter(detallestecnicos__modelo=filtro_modelo)
     if filtro_sistema:
@@ -964,39 +971,100 @@ def generar_excel(request):
     if filtro_ubicacion:
         dispositivos = dispositivos.filter(id_ubicacion=filtro_ubicacion)
 
-    # Crear un libro de trabajo de Excel
-    wb = openpyxl.Workbook()
+    # Crear libro y hoja
+    wb = Workbook()
     ws = wb.active
     ws.title = "Dispositivos Filtrados"
 
-    # Escribir encabezados en el archivo Excel
-    encabezados = ["Nombre", "Modelo", "Tipo", "Ubicación", "Sistema Operativo", "Número de Serie"]
+    # Encabezados
+    encabezados = [
+        "Nombre", "Tipo Elemento", "Fecha Adquisición", "IP", "Ubicación",
+        "Marca", "Modelo", "Número de Serie", "Sistema Operativo", "Versión Firmware",
+        "Parámetros Personalizados", "Última Actualización"
+    ]
     ws.append(encabezados)
 
-    # Llenar los datos de los dispositivos en el archivo Excel
+    # Estilos del encabezado
+    for cell in ws[1]:
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal="center")
+
+    # Agregar datos
     for dispositivo in dispositivos:
-        detalles_tecnicos = dispositivo.detallestecnicos_set.first()  # Relación inversa
+        detalles = DetallesTecnicos.objects.filter(id_inventario=dispositivo).first()
+        configuracion = Configuracion.objects.filter(id_inventario=dispositivo).first()
+        ws.append([
+            dispositivo.nombre,
+            dispositivo.tipo_elemento,
+            dispositivo.fecha_adquisicion.strftime("%Y-%m-%d") if dispositivo.fecha_adquisicion else "",
+            dispositivo.ip,
+            dispositivo.id_ubicacion.nombre_ubicacion if dispositivo.id_ubicacion else "",
+            detalles.marca if detalles and detalles.marca else "N/A",
+            detalles.modelo if detalles and detalles.modelo else "N/A",
+            detalles.numero_serie if detalles and detalles.numero_serie else "N/A",
+            detalles.sistema_operativo if detalles and detalles.sistema_operativo else "N/A",
+            detalles.version_firmware if detalles and detalles.version_firmware else "N/A",
+            configuracion.parametros_personalizados if configuracion and configuracion.parametros_personalizados else "N/A",
+            configuracion.ultima_actualizacion.strftime("%Y-%m-%d") if configuracion and configuracion.ultima_actualizacion else "N/A"
+        ])
 
-        if detalles_tecnicos:
-            ws.append([dispositivo.nombre,
-                       detalles_tecnicos.modelo if detalles_tecnicos.modelo else "N/A",
-                       dispositivo.tipo_elemento,
-                       dispositivo.id_ubicacion.nombre_ubicacion,
-                       detalles_tecnicos.sistema_operativo if detalles_tecnicos.sistema_operativo else "N/A",
-                       detalles_tecnicos.numero_serie if detalles_tecnicos.numero_serie else "N/A"])
-        else:
-            ws.append([dispositivo.nombre,
-                       "N/A",
-                       dispositivo.tipo_elemento,
-                       dispositivo.id_ubicacion.nombre_ubicacion,
-                       "N/A",
-                       "N/A"])
+    # Autoajustar el ancho de las columnas
+    for col in ws.columns:
+        max_length = 0
+        col_letter = get_column_letter(col[0].column)
+        for cell in col:
+            if cell.value:
+                max_length = max(max_length, len(str(cell.value)))
+        ws.column_dimensions[col_letter].width = max_length + 2
 
-    # Crear la respuesta HTTP con el archivo Excel como contenido
+    # Agregar filtros tipo Excel
+    ws.auto_filter.ref = ws.dimensions
+
+    # Preparar respuesta HTTP
+    fecha_hora = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename="dispositivos_filtrados.xlsx"'
-
-    # Guardar el archivo Excel en la respuesta
+    response['Content-Disposition'] = f'attachment; filename="dispositivos_filtrados_{fecha_hora}.xlsx"'
     wb.save(response)
-    
+
     return response
+
+from django.shortcuts import render, get_object_or_404
+from .models import Inventario
+
+from django.shortcuts import render, get_object_or_404
+from .models import Inventario, DetallesTecnicos, Configuracion, Ubicacion
+
+from django.shortcuts import render, get_object_or_404
+from .models import Inventario, DetallesTecnicos, Configuracion, Ubicacion
+
+from django.shortcuts import render, get_object_or_404
+from .models import Inventario, DetallesTecnicos, Configuracion, Ubicacion,HistorialCambios, Incidentes
+
+def detalle_dispositivo(request, id_inventario):
+    # Recuperamos el dispositivo
+    dispositivo = get_object_or_404(Inventario, id_inventario=id_inventario)
+    
+    # Obtener los detalles técnicos y configuraciones
+    detalles_tecnicos = DetallesTecnicos.objects.filter(id_inventario=dispositivo).first()
+    configuracion = Configuracion.objects.filter(id_inventario=dispositivo).first()
+    
+    # Recuperamos la ubicación
+    ubicacion = dispositivo.id_ubicacion  # Aquí ya tenemos el objeto Ubicacion relacionado
+    
+    # Recuperamos el historial de cambios más reciente
+    historial_cambios = HistorialCambios.objects.filter(id_inventario=dispositivo).order_by('-fecha_cambio').first()
+    
+    # Recuperamos los incidentes más recientes
+    incidentes = Incidentes.objects.filter(id_inventario=dispositivo).order_by('-fecha_mantenimiento').first()
+
+    # Pasamos todos los datos a la plantilla
+    context = {
+        'dispositivo': dispositivo,
+        'detalles_tecnicos': detalles_tecnicos,
+        'configuracion': configuracion,
+        'ubicacion': ubicacion,
+        'historial_cambios': historial_cambios,
+        'incidentes': incidentes,  # Añadimos los incidentes más recientes
+    }
+    
+    return render(request, 'detalle_dispositivo.html', context)

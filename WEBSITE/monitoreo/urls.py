@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import actualizar_orden, actualizar_orden_id, agregar_dispositivo_por_ip, agregar_multiples_dispositivos, agregar_ruta_definida, analizar_ruta, buscar_dispositivo, editar_ruta, eliminar_dispositivo_ruta_definida, eliminar_ruta, filtro_dispositivos, formulario_agregar_ruta_definida, generar_excel, generar_pdf, guardar_historial, interfaz_filtros, inventario_por_ubicacion, monitoreointerfaz, mostrar_animacion, navbarinterfaz, obtener_dispositivos_ruta, ping_ruta, verificar_estado_dispositivo, mostrar_grafica, monitoreo_red, agregar_ruta, lista_rutas
+from .views import actualizar_orden, actualizar_orden_id, agregar_dispositivo_por_ip, agregar_multiples_dispositivos, agregar_ruta_definida, analizar_ruta, buscar_dispositivo, detalle_dispositivo, editar_ruta, eliminar_dispositivo_ruta_definida, eliminar_ruta, filtro_dispositivos, formulario_agregar_ruta_definida, generar_excel, generar_pdf, guardar_historial, interfaz_filtros, inventario_por_ubicacion, monitoreointerfaz, mostrar_animacion, navbarinterfaz, obtener_dispositivos_ruta, ping_ruta, verificar_estado_dispositivo, mostrar_grafica, monitoreo_red, agregar_ruta, lista_rutas
 
 urlpatterns = [
     path('home/', monitoreointerfaz, name='monitoreo_principal'),
@@ -10,7 +10,7 @@ urlpatterns = [
     path('verificar_estado/', verificar_estado_dispositivo, name='verificar_estado'),
     path('navbar', navbarinterfaz, name='navbar'),
     path('generar_excel/', generar_excel, name='generar_excel'),
-
+    path('detalle_dispositivo/<int:id_inventario>/', detalle_dispositivo, name='detalle_dispositivo'), #INTERFAZ
 
     path('generar_pdf/', generar_pdf, name='generar_pdf'),
     path('interfaz_filtros/', interfaz_filtros, name='interfaz_filtros'),

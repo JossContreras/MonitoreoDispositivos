@@ -1,0 +1,270 @@
+{% load static %}
+{% include 'nav_bar.html' %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles del Dispositivo</title>
+    <!-- Enlace a Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+        background-color: #f0f0f0; /* Fondo gris claro */
+    }
+        .card-header {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            border-radius: 0.25rem;
+        }
+        .card-header:hover {
+            background-color: #0056b3;
+            cursor: pointer;
+        }
+        .card-body {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+        }
+        .card-body p {
+            margin-bottom: 0;
+            transition: all 0.3s ease; /* Animación suave */
+        }
+        .card-body p:hover {
+            background-color: #e9ecef; /* Resaltado de fondo cuando pasa el cursor */
+            transform: scale(1.05); /* Efecto de aumento */
+            border-radius: 0.2rem;
+        }
+        .btn-custom {
+            background-color: #28a745;
+            color: white;
+            font-weight: bold;
+        }
+        .btn-custom:hover {
+            background-color: #218838;
+        }
+        .highlight {
+            color: #ff6f61; /* Color llamativo */
+            font-weight: bold;
+        }
+        .card {
+            margin-bottom: 1rem;
+        }
+        .row .col-md-4 {
+            font-weight: bold;
+        }
+        .row {
+            margin-bottom: 0.5rem;
+        }
+        /* Agregar animación al pasar el cursor sobre la fila de información */
+        .info-row {
+            border-bottom: 2px solid #dee2e6; /* Línea base */
+            transition: all 0.3s ease-in-out;
+        }
+        .info-row:hover {
+            background-color: #f1f1f1;
+            border-bottom: 4px solid #7d7d7d; /* Línea más gruesa cuando se pasa el cursor */
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Dispositivo Detalle -->
+<div class="container mt-5">
+    {% include 'navegacion.html' %}
+    <div class="ruta-actual mt-3 mb-4">
+        <span><a href="{% url 'monitoreo_principal' %}" class="breadcrumb-link">Monitoreo</a></span>
+        <span class="breadcrumb-separator">❯</span>
+        <span><a href="{% url 'lista_rutas' %}" class="breadcrumb-link">Rutas</a></span>
+        <span class="breadcrumb-separator">❯</span>
+        <span class="breadcrumb-current">Detalles</span>
+    </div>
+
+    <div class="container mt-5">
+        <div class="row mb-4">
+            <h2 class="col-9">Detalles del Dispositivo:</h2>
+            <div class="col-3 d-flex justify-content-end">
+                <a href="javascript:history.back()" class="btn btn-custom mt-3">Volver</a>
+            </div>
+        </div>
+
+    <!-- Información del Dispositivo -->
+    <div class="card">
+        <div class="card-header">
+            Información del Dispositivo
+        </div>
+        <div class="card-body">
+            <div class="row mb-3 info-row">
+                <div class="col-md-4"><strong>Nombre:</strong></div>
+                <div class="col-md-8"><p>{{ dispositivo.nombre }}</p></div>
+            </div>
+            <div class="row mb-3 info-row">
+                <div class="col-md-4"><strong>Tipo de Elemento:</strong></div>
+                <div class="col-md-8"><p>{{ dispositivo.tipo_elemento }}</p></div>
+            </div>
+            <div class="row mb-3 info-row">
+                <div class="col-md-4"><strong>Fecha de Adquisición:</strong></div>
+                <div class="col-md-8"><p>{{ dispositivo.fecha_adquisicion }}</p></div>
+            </div>
+            <div class="row mb-3 info-row">
+                <div class="col-md-4"><strong>IP:</strong></div>
+                <div class="col-md-8"><p>{{ dispositivo.ip }}</p></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información de Ubicación -->
+    <div class="card">
+        <div class="card-header">
+            Ubicación
+        </div>
+        <div class="card-body">
+            <div class="row mb-3 info-row">
+                <div class="col-md-4"><strong>Nombre de Ubicación:</strong></div>
+                <div class="col-md-8"><p>{{ ubicacion.nombre_ubicacion }}</p></div>
+            </div>
+            <div class="row mb-3 info-row">
+                <div class="col-md-4"><strong>Dirección:</strong></div>
+                <div class="col-md-8"><p>{{ ubicacion.direccion }}</p></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información Detalles Técnicos -->
+    <div class="card">
+        <div class="card-header">
+            Detalles Técnicos
+        </div>
+        <div class="card-body">
+            <div class="row mb-3 info-row">
+                <div class="col-md-4"><strong>Marca:</strong></div>
+                <div class="col-md-8"><p>{{ detalles_tecnicos.marca|default:"No disponible" }}</p></div>
+            </div>
+            <div class="row mb-3 info-row">
+                <div class="col-md-4"><strong>Modelo:</strong></div>
+                <div class="col-md-8"><p>{{ detalles_tecnicos.modelo|default:"No disponible" }}</p></div>
+            </div>
+            <div class="row mb-3 info-row">
+                <div class="col-md-4"><strong>Número de Serie:</strong></div>
+                <div class="col-md-8"><p>{{ detalles_tecnicos.numero_serie|default:"No disponible" }}</p></div>
+            </div>
+            <div class="row mb-3 info-row">
+                <div class="col-md-4"><strong>Sistema Operativo:</strong></div>
+                <div class="col-md-8"><p>{{ detalles_tecnicos.sistema_operativo|default:"No disponible" }}</p></div>
+            </div>
+            <div class="row mb-3 info-row">
+                <div class="col-md-4"><strong>Versión de Firmware:</strong></div>
+                <div class="col-md-8"><p>{{ detalles_tecnicos.version_firmware|default:"No disponible" }}</p></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información de Configuración -->
+    <div class="card">
+        <div class="card-header">
+            Configuración
+        </div>
+        <div class="card-body">
+            {% if configuracion %}
+                <div class="row mb-3 info-row">
+                    <div class="col-md-4"><strong>Parámetros Personalizados:</strong></div>
+                    <div class="col-md-8"><p>{{ configuracion.parametros_personalizados|default:"No disponible" }}</p></div>
+                </div>
+                <div class="row mb-3 info-row">
+                    <div class="col-md-4"><strong>Descripción:</strong></div>
+                    <div class="col-md-8"><p>{{ configuracion.descripcion|default:"No disponible" }}</p></div>
+                </div>
+                
+                <div class="row mb-3 info-row">
+                    <div class="col-md-4"><strong>Última Actualización:</strong></div>
+                    <div class="col-md-8"><p>{{ configuracion.ultima_actualizacion|default:"No disponible" }}</p></div>
+                </div>
+            {% else %}
+                <div class="row mb-3 info-row">
+                    <div class="col-md-4"><strong>Parámetros Personalizados:</strong></div>
+                    <div class="col-md-8"><p>No disponible</p></div>
+                </div>
+                <div class="row mb-3 info-row">
+                    <div class="col-md-4"><strong>Última Actualización:</strong></div>
+                    <div class="col-md-8"><p>No disponible</p></div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Información de Incidentes -->
+     <!-- Información de Incidentes -->
+{% if incidentes %}
+<div class="card">
+    <div class="card-header">
+        Incidentes
+    </div>
+    <div class="card-body">
+        <div class="row mb-3 info-row">
+            <div class="col-md-4"><strong>Fecha del Mantenimiento:</strong></div>
+            <div class="col-md-8"><p>{{ incidentes.fecha_mantenimiento|default:"No disponible" }}</p></div>
+        </div>
+        <div class="row mb-3 info-row">
+            <div class="col-md-4"><strong>Tipo de Mantenimiento:</strong></div>
+            <div class="col-md-8"><p>{{ incidentes.tipo_mantenimiento|default:"No disponible" }}</p></div>
+        </div>
+        <div class="row mb-3 info-row">
+            <div class="col-md-4"><strong>Descripción:</strong></div>
+            <div class="col-md-8"><p>{{ incidentes.descripcion|default:"No disponible" }}</p></div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <div class="card-header">
+        Incidentes
+    </div>
+    <div class="card-body">
+        <p>No hay resultados previos de incidentes.</p>
+    </div>
+</div>
+{% endif %}
+
+    <!-- Información de Historial de Cambios -->
+     <!-- Información de Historial de Cambios -->
+{% if historial_cambios %}
+<div class="card">
+    <div class="card-header">
+        Historial de Cambios
+    </div>
+    <div class="card-body">
+        <div class="row mb-3 info-row">
+            <div class="col-md-4"><strong>Fecha del Cambio:</strong></div>
+            <div class="col-md-8"><p>{{ historial_cambios.fecha_cambio|default:"No disponible" }}</p></div>
+        </div>
+        <div class="row mb-3 info-row">
+            <div class="col-md-4"><strong>Cambio Realizado:</strong></div>
+            <div class="col-md-8"><p>{{ historial_cambios.cambio_realizado|default:"No disponible" }}</p></div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <div class="card-header">
+        Historial de Cambios
+    </div>
+    <div class="card-body">
+        <p>No hay resultados previos de cambios.</p>
+    </div>
+</div>
+{% endif %}
+
+
+    <!-- Botón Volver -->
+    <a href="javascript:history.back()" class="btn btn-custom mt-3">Volver</a>
+</div>
+
+<!-- Enlace a Bootstrap JS y Popper.js -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+</body>
+</html>

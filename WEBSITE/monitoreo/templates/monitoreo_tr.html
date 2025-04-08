@@ -4,93 +4,322 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <!-- 🔸 METADATOS Y RECURSOS -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dispositivos</title>
     <link rel="stylesheet" href="{% static 'css/monitoreo_tr.css' %}">
     <script src="{% static 'js/monitoreo_tr.js' %}" defer></script>
 </head>
+
 <style>
-    body {
-        background-color: #f0f0f0; /* Fondo gris claro */
-    }
+    /* 🔸 Estilos Generales */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f7fc;
+    margin: 0;
+    padding: 0;
+}
+
+/* 🔸 Estilos de las tarjetas de filtro */
+.filtros-card {
+    margin: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+}
+
+.toggle-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-align: center;
+}
+
+.toggle-btn:hover {
+    background-color: #0056b3;
+}
+
+/* 🔸 Estilos para el acordeón (tarjetas desplegables) */
+.acordeon {
+    margin-top: 10px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.acordeon-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #f1f1f1;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.acordeon-btn:hover {
+    background-color:rgb(194, 82, 255);
+    color: white;
+}
+
+.acordeon-content {
+    display: none;
+    padding: 15px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 🔸 Estilos para el layout de 3 a 4 columnas */
+.filtro-columnas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));  /* 3 a 4 columnas según el tamaño del contenido */
+    gap: 15px;
+}
+
+.acordeon-content label {
+    display: block;
+    color: #333;
+    font-size: 14px;
+}
+
+.acordeon-content input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+/* 🟦 Estilos de transición */
+.acordeon-btn.active + .acordeon-content {
+    display: block;
+}
+
+/* 🔸 Estilos para el botón de buscar */
+#buscar-filtros-btn {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#buscar-filtros-btn:hover {
+    background-color: #0056b3;
+}
+
+/* Estilo para las columnas de los checkboxes */
+.checkbox-columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* 2 o 3 columnas dependiendo del espacio */
+    gap: 15px; /* Espacio entre columnas */
+}
+
+/* Opcional, para mejorar el espacio de las etiquetas */
+.checkbox-columns label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+/* Estilo para la tarjeta de búsqueda por IP */
+.ip-card {
+    margin: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+}
+
+.toggle-btn {
+    width: 100%;
+    padding: 10px;
+    text-align: left;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.ip-input-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 10px;
+}
+
+.ip-input {
+    display: flex;
+    align-items: center;
+}
+
+.ip-input input {
+    width: 50px;
+    height: 40px;
+    text-align: center;
+    font-size: 16px;
+    margin-right: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.ip-input span {
+    font-size: 20px;
+    margin-right: 5px;
+}
+
+#buscar-ip-btn {
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+    border-radius: 5px;
+}
+
+#buscar-ip-btn:hover {
+    background-color: #218838;
+}
+
+
 </style>
+
 <body>
     <div class="container">
-        
+
+        <!-- 🔸 BARRA DE NAVEGACIÓN LATERAL -->
         {% include 'navegacion.html' %}
+
+        <!-- 🔸 MIGAS DE PAN / RUTA ACTUAL -->
         <div class="ruta-actual mt-3 mb-4">
             <span><a href="{% url 'monitoreo_principal' %}" class="breadcrumb-link">Monitoreo</a></span>
             <span class="breadcrumb-separator">❯</span>
             <span class="breadcrumb-current">Dispositivos</span>
         </div>
+
+        <!-- 🔸 TÍTULO PRINCIPAL -->
         <h1>Dispositivos</h1>
 
-        <!-- 🔹 Tarjeta de Filtros (Desplegable) -->
-        <div class="card filtros-card">
-            <!-- Botón para mostrar/ocultar filtros -->
-            <button class="toggle-btn" onclick="toggleFiltro('filtros-seccion')">📂 Filtros de Búsqueda</button>
-            
-            <!-- Contenido de filtros (inicialmente oculto) -->
-            <div id="filtros-seccion" class="contenido" style="display: none;">
-                <!-- Filtro de ubicación -->
-                <label for="ubicacion">Ubicación:</label>
-                <select id="ubicacion" multiple>
+
+        <!-- 🔸 TARJETA DE FILTROS (Desplegable) -->
+<div class="card filtros-card">
+    <!-- Botón para mostrar/ocultar filtros -->
+    <button class="toggle-btn" onclick="toggleFiltro('filtros-seccion')">📂 Filtros de Búsqueda</button>
+
+    <!-- Sección de filtros -->
+    <div id="filtros-seccion" class="contenido" style="display: none;">
+        
+        <!-- Filtro por Ubicación -->
+        <div class="acordeon">
+            <button class="acordeon-btn" onclick="toggleAcordeon(this)">📍 Ubicación</button>
+            <div class="acordeon-content">
+                <div class="checkbox-columns">
                     {% for ubicacion in ubicaciones %}
-                        <option value="{{ ubicacion.id_ubicacion }}">{{ ubicacion.nombre_ubicacion }}</option>
+                        <label>
+                            <input type="checkbox" name="ubicacion" value="{{ ubicacion.id_ubicacion }}">
+                            {{ ubicacion.nombre_ubicacion }}
+                        </label>
                     {% endfor %}
-                </select>
-        
-                <!-- Filtro de tipo de dispositivo -->
-                    <legend>Tipo de Dispositivo:</legend>
-                    {% for tipo in tipos %}
-                        <label><input type="checkbox" name="tipo" value="{{ tipo }}"> {{ tipo }}</label>
-                    {% endfor %}
-        
-                <!-- Filtro de marca -->
-                    <legend>Marca:</legend>
-                    {% for marca in marcas %}
-                        <label><input type="checkbox" name="marca" value="{{ marca }}"> {{ marca }}</label>
-                    {% endfor %}
-        
-                <!-- Filtro de sistema operativo -->
-                    <legend>Sistema Operativo:</legend>
-                    {% for sistema in sistemas %}
-                        <label><input type="checkbox" name="sistema" value="{{ sistema }}"> {{ sistema }}</label>
-                    {% endfor %}
-        
-                <!-- Botón para aplicar los filtros -->
-                <button type="button" onclick="cargarInventario()" id="buscar-filtros-btn">🔍 Buscar por filtros</button>
+                </div>
             </div>
         </div>
         
 
-        <!-- 🔹 Tarjeta de Búsqueda por IP (Desplegable) --><div class="card ip-card">
+        <!-- Filtro por Tipo de Dispositivo -->
+        <div class="acordeon">
+            <button class="acordeon-btn" onclick="toggleAcordeon(this)">🖥️ Tipo de Dispositivo</button>
+            <div class="acordeon-content">
+                <div class="filtro-columnas">
+                    {% for tipo in tipos %}
+                        <label><input type="checkbox" name="tipo" value="{{ tipo }}"> {{ tipo }}</label>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtro por Marca -->
+        <div class="acordeon">
+            <button class="acordeon-btn" onclick="toggleAcordeon(this)">🏷️ Marca</button>
+            <div class="acordeon-content">
+                <div class="filtro-columnas">
+                    {% for marca in marcas %}
+                        <label><input type="checkbox" name="marca" value="{{ marca }}"> {{ marca }}</label>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtro por Sistema Operativo -->
+        <div class="acordeon">
+            <button class="acordeon-btn" onclick="toggleAcordeon(this)">💻 Sistema Operativo</button>
+            <div class="acordeon-content">
+                <div class="filtro-columnas">
+                    {% for sistema in sistemas %}
+                        <label><input type="checkbox" name="sistema" value="{{ sistema }}"> {{ sistema }}</label>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Botón para aplicar filtros -->
+        <button type="button" onclick="cargarInventario()" id="buscar-filtros-btn">🔍 Buscar por filtros</button>
+    </div>
+</div>
+
+
+<!-- 🔸 TARJETA DE BÚSQUEDA POR IP -->
+<div class="card ip-card">
+    <!-- Botón para mostrar/ocultar la sección de búsqueda por IP -->
     <button class="toggle-btn" onclick="toggleFiltro('ip-seccion')">🌐 Buscar por IP</button>
+
+    <!-- Sección de búsqueda por IP -->
     <div id="ip-seccion" class="contenido" style="display: none;">
+        <!-- Contenedor del campo de entrada IP -->
         <div class="ip-input-container">
             <div class="ip-input">
-                <input type="text" id="ip1" maxlength="3" oninput="moverCursor(this, 'ip2')" onkeypress="return soloNumeros(event)">
+                <!-- Entradas para cada parte de la dirección IP -->
+                <input type="text" id="ip1" maxlength="3" oninput="moverCursor(this, 'ip2')" onkeypress="return soloNumeros(event)" placeholder="XXX">
                 <span>.</span>
-                <input type="text" id="ip2" maxlength="3" oninput="moverCursor(this, 'ip3')" onkeypress="return soloNumeros(event)">
+                <input type="text" id="ip2" maxlength="3" oninput="moverCursor(this, 'ip3')" onkeypress="return soloNumeros(event)" placeholder="XXX">
                 <span>.</span>
-                <input type="text" id="ip3" maxlength="3" oninput="moverCursor(this, 'ip4')" onkeypress="return soloNumeros(event)">
+                <input type="text" id="ip3" maxlength="3" oninput="moverCursor(this, 'ip4')" onkeypress="return soloNumeros(event)" placeholder="XXX">
                 <span>.</span>
-                <input type="text" id="ip4" maxlength="3" onkeypress="return soloNumeros(event)">
+                <input type="text" id="ip4" maxlength="3" onkeypress="return soloNumeros(event)" placeholder="XXX">
             </div>
-            <button id="buscar-ip-btn" onclick="buscarPorIP()">🔍</button>
+            <!-- Botón para realizar la búsqueda por IP -->
+            <button id="buscar-ip-btn" onclick="buscarPorIP()">🔍 Buscar</button>
         </div>
     </div>
 </div>
 
 
-        <!-- 🔹 Botones Generales -->
+        <!-- 🔸 BOTONES GENERALES -->
+        <div class="card filtros-card">
         <div class="botones">
             <button id="verificar-todos" onclick="verificarTodos()">✅ Verificar Todos</button>
             <button id="eliminar-btn" onclick="eliminarFiltros()">❌ Borrar Filtros</button>
         </div>
+    </div>
 
-        <!-- 🔹 Tabla de Inventario -->
+        <!-- 🔸 TABLA DE INVENTARIO -->
         <div class="tabla-contenedor">
             <table>
                 <thead>
@@ -105,8 +334,38 @@
                 </thead>
                 <tbody id="inventario-body"></tbody>
             </table>
-            
         </div>
     </div>
+    <script>
+        // Función para alternar la visibilidad de los acordeones
+function toggleAcordeon(element) {
+    const acordeonContent = element.nextElementSibling;
+    const allAcordeons = document.querySelectorAll('.acordeon-content');
+    
+    // Cerrar todos los acordeones
+    allAcordeons.forEach(content => {
+        if (content !== acordeonContent) {
+            content.style.display = 'none';
+            content.previousElementSibling.classList.remove('active');
+        }
+    });
+
+    // Alternar el acordeón clickeado
+    if (acordeonContent.style.display === 'block') {
+        acordeonContent.style.display = 'none';
+        element.classList.remove('active');
+    } else {
+        acordeonContent.style.display = 'block';
+        element.classList.add('active');
+    }
+}
+
+// Función para mostrar/ocultar los filtros principales
+function toggleFiltro(id) {
+    const filtrosSeccion = document.getElementById(id);
+    filtrosSeccion.style.display = filtrosSeccion.style.display === 'none' ? 'block' : 'none';
+}
+</script>
+
 </body>
 </html>

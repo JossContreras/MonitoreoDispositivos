@@ -21,7 +21,7 @@ function configurarFiltrosDesplegables() {
 /* 🔹 Cargar inventario basado en filtros seleccionados */
 function cargarInventario() {
     // Obtener los valores seleccionados para cada filtro
-    let ubicaciones = [...document.getElementById("ubicacion").selectedOptions].map(opt => opt.value);
+    let ubicaciones = [...document.querySelectorAll("input[name='ubicacion']:checked")].map(input => input.value);
     let tipos = [...document.querySelectorAll("input[name='tipo']:checked")].map(input => input.value);
     let marcas = [...document.querySelectorAll("input[name='marca']:checked")].map(input => input.value);
     let sistemas = [...document.querySelectorAll("input[name='sistema']:checked")].map(input => input.value);
@@ -48,6 +48,7 @@ function cargarInventario() {
         .then(data => actualizarTabla(data))  // Pasar los datos a la función que actualiza la tabla
         .catch(error => console.error("⚠ Error al cargar inventario:", error));
 }
+
 
 function buscarPorIP() {
     // Obtener los valores de los campos de la IP
@@ -134,7 +135,18 @@ function actualizarTabla(data) {
         tabla.appendChild(fila);
     });
 
-    asignarEventosBotones(); // Asegúrate de volver a asignar los eventos después de actualizar la tabla
+    asignarEventosBotones(
+        document.querySelectorAll(".btn-detalles").forEach(button => {
+            button.addEventListener("click", function () {
+                const id = this.dataset.id;
+                if (id) {
+                    window.location.href = `/monitoreo/detalle_dispositivo/${id}/`;
+                } else {
+                    alert("⚠ No se encontró el ID del dispositivo.");
+                }
+            });
+        })
+    ); // Asegúrate de volver a asignar los eventos después de actualizar la tabla
 }
 
 /* 🔹 Asignar eventos a los botones después de actualizar la tabla */

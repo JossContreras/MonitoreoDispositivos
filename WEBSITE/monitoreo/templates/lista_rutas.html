@@ -1,10 +1,11 @@
 {% block content %}
 {% load static %}
 {% include 'nav_bar.html' %}
+
 <div class="container mt-5">
     <div id="spinner"></div>
-    <h2 class="mb-4 text-center">Rutas Definidas</h2>
-
+    <h2 class="mb-4 text-center">Rutas Establecidas</h2>
+    
     <div class="table-responsive">
     {% include 'navegacion.html' %}
         <div class="ruta-actual mt-3 mb-4">
@@ -12,7 +13,9 @@
             <span class="breadcrumb-separator">❯</span>
             <span class="breadcrumb-current">Rutas</span>
         </div>
-        <a href="{% url 'formulario_agregar_ruta' %}" class="btn btn-primary btn-agregar">Crear nueva ruta</a>
+        <div class="card custom-card mb-3">
+            <a href="{% url 'formulario_agregar_ruta' %}" class="btn btn-primary btn-agregar">Crear nueva ruta</a>
+        </div>
         <table class="table table-hover table-striped">
             
             <thead>
@@ -31,55 +34,61 @@
                     <td>
                         <!-- Botón para abrir el modal -->
                         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal_{{ ruta.id_ruta }}">
-                            Ver Inventarios
+                            Ver Dispositivos
                         </button>
 
                         <!-- Modal -->
-                        <div class="modal fade" id="modal_{{ ruta.id_ruta }}" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
-                            <div class="modal-dialog modal-lg" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="modalLabel">Inventarios Asociados a {{ ruta.nombre_ruta }}</h5>
-                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
+<div class="modal fade" id="modal_{{ ruta.id_ruta }}" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabel">Dispositivos Asociados a {{ ruta.nombre_ruta }}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="dispositivos-{{ ruta.id_ruta }}">
+                    {% for inventario in ruta.inventarios %}
+                        <div id="dispositivo-{{ ruta.id_ruta }}-{{ inventario.id_inventario }}" data-ip="{{ inventario.ip }}" class="card mb-3 dispositivo">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="card-title">{{ inventario.nombre }} ({{ inventario.ip }})</h5>
+                                        <p class="card-text">
+                                            <span class="device-number">{{ forloop.counter }}.</span>
+                                            <span class="status-indicator text-muted"> - Pendiente</span>
+                                            <span class="ping-time"></span>
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <a href="{% url 'detalle_dispositivo' inventario.id_inventario %}" class="btn btn-sm btn-info">
+                                            Más Detalles
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-secondary ping-btn" 
+                                                onclick="hacerPingIndividual({{ ruta.id_ruta }}, {{ inventario.id_inventario }}, '{{ inventario.ip }}')">
+                                            Ping
                                         </button>
                                     </div>
-                                    <div class="modal-body">
-                                        <div id="dispositivos-{{ ruta.id_ruta }}">
-                                            {% for inventario in ruta.inventarios %}
-                                                <div id="dispositivo-{{ ruta.id_ruta }}-{{ inventario.id_inventario }}" data-ip="{{ inventario.ip }}" class="card mb-3 dispositivo">
-                                                    <div class="card-body">
-                                                        <div class="d-flex justify-content-between">
-                                                            <div>
-                                                                <h5 class="card-title">{{ inventario.nombre }} ({{ inventario.ip }})</h5>
-                                                                <p class="card-text">
-                                                                    <span class="device-number">{{ forloop.counter }}.</span>
-                                                                    <span class="status-indicator text-muted"> - Pendiente</span>
-                                                                    <span class="ping-time"></span>
-                                                                </p>
-                                                            </div>
-                                                            <div>
-                                                                <button class="btn btn-sm btn-outline-secondary ping-btn" 
-                                                                        onclick="hacerPingIndividual({{ ruta.id_ruta }}, {{ inventario.id_inventario }}, '{{ inventario.ip }}')">
-                                                                    Hacer Ping
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                        <div class="error-message text-danger" style="display:none;"></div>
-                                                    </div>
-                                                </div>
-                                            {% empty %}
-                                                <p>No hay inventarios asociados.</p>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                                        <button type="button" class="btn btn-success" onclick="hacerPingTodos({{ ruta.id_ruta }})">Hacer Ping a Todos</button>
-                                    </div>
                                 </div>
+                                <div class="error-message text-danger" style="display:none;"></div>
                             </div>
                         </div>
+                    {% empty %}
+                        <p>No hay inventarios asociados.</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-success" onclick="hacerPingTodos({{ ruta.id_ruta }})">Hacer Ping a Todos</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
                     </td>
                     <td>
                           <!-- Icono de Editar (sin cambios) -->
@@ -275,7 +284,256 @@ window.onload = function() {
 };  
 </script>
 
+
 <style>
+                
+    .btn i {
+        margin-right: 8px; /* Espacio entre el icono y el texto */
+    }
+
+    /* Ajuste en el tamaño de los iconos */
+    .btn-warning i, .btn-danger i {
+        font-size: 25px;
+    }
+
+    .btn:hover {
+        opacity: 0.9; /* Efecto visual al pasar el cursor */
+    }
+
+    .container {
+        margin-top: 5rem;
+        margin-bottom: 2rem;
+    }
+
+    .table-responsive {
+        margin-top: 2rem;
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    .table {
+        width: 100%;
+        background-color: #fff;
+        border-radius: 8px;
+    }
+
+    .table th, .table td {
+        padding: 16px;
+        text-align: left;
+        vertical-align: middle;
+        font-size: 1rem;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .table-striped tbody tr:nth-of-type(odd) {
+        background-color: #f9f9f9;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    /* Modal */
+    .modal-dialog {
+        max-width: 800px;
+        margin: 30px auto;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .card {
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        margin-bottom: 1.5rem;
+    }
+
+    .card-title {
+        font-size: 1.1rem;
+    }
+
+    .card-text {
+        font-size: 0.95rem;
+    }
+
+    .ping-btn {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .ping-btn:hover {
+        background-color: #0056b3;
+    }
+
+    .error-message {
+        margin-top: 10px;
+    }
+
+    /* Estilos de los estados */
+    .estado-activo {
+        background-color: #e8f5e8;
+        border-left: 5px solid green;
+    }
+
+    .estado-error {
+        background-color: #fff3cd;
+        border-left: 5px solid darkorange;
+    }
+
+    .estado-inactivo {
+        background-color: #f9e0e0;
+        border-left: 5px solid red;
+    }
+
+    .status-indicator {
+        font-weight: bold;
+        margin-left: 10px;
+        font-size: 1rem;
+    }
+
+    .device-number {
+        font-weight: bold;
+        margin-right: 10px;
+    }
+
+    /* Animación */
+    @keyframes fade {
+        0% { opacity: 0; }
+        100% { opacity: 1; }
+    }
+
+    .animate-fade {
+        animation: fade 1s ease-in-out;
+    }
+
+    /* Estilos generales */
+    .container {
+        margin-top: 5rem;
+        margin-bottom: 2rem;
+    }
+
+    .table-responsive {
+        margin-top: 2rem;
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    .table {
+        width: 100%;
+        background-color: #fff;
+        border-radius: 8px;
+    }
+
+    .table th, .table td {
+        padding: 16px;
+        text-align: left;
+        vertical-align: middle;
+        font-size: 1rem;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .table-striped tbody tr:nth-of-type(odd) {
+        background-color: #f9f9f9;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    /* Estilo para el botón "Agregar Ruta Definida" */
+    .btn-agregar {
+        top: 20px;
+        right: 20px;
+        padding: 12px 24px;
+        background-color: #6dbf7b; /* Fondo verde natural */
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-agregar:hover {
+        background-color: #58a55c; /* Cambio de color al pasar el cursor */
+    }
+
+    /* Modal */
+    .modal-dialog {
+        max-width: 800px;
+        margin: 30px auto;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .card {
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        margin-bottom: 1.5rem;
+    }
+
+    .card-title {
+        font-size: 1.1rem;
+    }
+
+    .card-text {
+        font-size: 0.95rem;
+    }
+
+    .ping-btn {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .ping-btn:hover {
+        background-color: #0056b3;
+    }
+
+    .error-message {
+        margin-top: 10px;
+    }
+
+    /* Estilos de los estados */
+    .estado-activo {
+        background-color: #e8f5e8;
+        border-left: 5px solid green;
+    }
+
+    .estado-error {
+        background-color: #fff3cd;
+        border-left: 5px solid darkorange;
+    }
+
+    .estado-inactivo {
+        background-color: #f9e0e0;
+        border-left: 5px solid red;
+    }
+
+    .status-indicator {
+        font-weight: bold;
+        margin-left: 10px;
+        font-size: 1rem;
+    }
+
+    .device-number {
+        font-weight: bold;
+        margin-right: 10px;
+    }
+
+    /* Animación */
+    @keyframes fade {
+        0% { opacity: 0; }
+        100% { opacity: 1; }
+    }
+
+    .animate-fade {
+        animation: fade 1s ease-in-out;
+    }
+
     #spinner {
         position: fixed;
         top: 50%;
@@ -297,258 +555,4 @@ window.onload = function() {
     body {
         background-color: #f0f0f0; /* Fondo gris claro */
     }
-
-/* Mejorar la estructura de la tabla con márgenes y mayor espacio */
-
-/* Estilo para los botones con iconos */
-.btn i {
-    margin-right: 8px; /* Espacio entre el icono y el texto */
-}
-
-/* Ajuste en el tamaño de los iconos */
-.btn-warning i, .btn-danger i {
-    font-size: 25px;
-}
-
-.btn:hover {
-    opacity: 0.9; /* Efecto visual al pasar el cursor */
-}
-
-.container {
-    margin-top: 5rem;
-    margin-bottom: 2rem;
-}
-
-.table-responsive {
-    margin-top: 2rem;
-    max-width: 100%;
-    overflow-x: auto;
-}
-
-.table {
-    width: 100%;
-    background-color: #fff;
-    border-radius: 8px;
-}
-
-.table th, .table td {
-    padding: 16px;
-    text-align: left;
-    vertical-align: middle;
-    font-size: 1rem;
-    border-bottom: 1px solid #ddd;
-}
-
-.table-striped tbody tr:nth-of-type(odd) {
-    background-color: #f9f9f9;
-}
-
-.table-hover tbody tr:hover {
-    background-color: #f1f1f1;
-}
-
-/* Modal */
-.modal-dialog {
-    max-width: 800px;
-    margin: 30px auto;
-}
-
-.card-body {
-    padding: 1.5rem;
-}
-
-.card {
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    margin-bottom: 1.5rem;
-}
-
-.card-title {
-    font-size: 1.1rem;
-}
-
-.card-text {
-    font-size: 0.95rem;
-}
-
-.ping-btn {
-    background-color: #007bff;
-    color: white;
-}
-
-.ping-btn:hover {
-    background-color: #0056b3;
-}
-
-.error-message {
-    margin-top: 10px;
-}
-
-/* Estilos de los estados */
-.estado-activo {
-    background-color: #e8f5e8;
-    border-left: 5px solid green;
-}
-
-.estado-error {
-    background-color: #fff3cd;
-    border-left: 5px solid darkorange;
-}
-
-.estado-inactivo {
-    background-color: #f9e0e0;
-    border-left: 5px solid red;
-}
-
-.status-indicator {
-    font-weight: bold;
-    margin-left: 10px;
-    font-size: 1rem;
-}
-
-.device-number {
-    font-weight: bold;
-    margin-right: 10px;
-}
-
-/* Animación */
-@keyframes fade {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
-}
-
-.animate-fade {
-    animation: fade 1s ease-in-out;
-}
-
-/* Estilos generales */
-.container {
-    margin-top: 5rem;
-    margin-bottom: 2rem;
-}
-
-.table-responsive {
-    margin-top: 2rem;
-    max-width: 100%;
-    overflow-x: auto;
-}
-
-.table {
-    width: 100%;
-    background-color: #fff;
-    border-radius: 8px;
-}
-
-.table th, .table td {
-    padding: 16px;
-    text-align: left;
-    vertical-align: middle;
-    font-size: 1rem;
-    border-bottom: 1px solid #ddd;
-}
-
-.table-striped tbody tr:nth-of-type(odd) {
-    background-color: #f9f9f9;
-}
-
-.table-hover tbody tr:hover {
-    background-color: #f1f1f1;
-}
-
-/* Estilo para el botón "Agregar Ruta Definida" */
-.btn-agregar {
-    position: relative;
-    top: 10px;
-    right: 10px;
-    padding: 12px 24px;
-    background-color: #6dbf7b; /* Fondo verde natural */
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s ease;
-    z-index: 10;
-    position: absolute;
-}
-
-.btn-agregar:hover {
-    background-color: #58a55c; /* Cambio de color al pasar el cursor */
-}
-
-/* Modal */
-.modal-dialog {
-    max-width: 800px;
-    margin: 30px auto;
-}
-
-.card-body {
-    padding: 1.5rem;
-}
-
-.card {
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    margin-bottom: 1.5rem;
-}
-
-.card-title {
-    font-size: 1.1rem;
-}
-
-.card-text {
-    font-size: 0.95rem;
-}
-
-.ping-btn {
-    background-color: #007bff;
-    color: white;
-}
-
-.ping-btn:hover {
-    background-color: #0056b3;
-}
-
-.error-message {
-    margin-top: 10px;
-}
-
-/* Estilos de los estados */
-.estado-activo {
-    background-color: #e8f5e8;
-    border-left: 5px solid green;
-}
-
-.estado-error {
-    background-color: #fff3cd;
-    border-left: 5px solid darkorange;
-}
-
-.estado-inactivo {
-    background-color: #f9e0e0;
-    border-left: 5px solid red;
-}
-
-.status-indicator {
-    font-weight: bold;
-    margin-left: 10px;
-    font-size: 1rem;
-}
-
-.device-number {
-    font-weight: bold;
-    margin-right: 10px;
-}
-
-/* Animación */
-@keyframes fade {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
-}
-
-.animate-fade {
-    animation: fade 1s ease-in-out;
-}
-
 </style>
