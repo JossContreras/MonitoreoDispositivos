@@ -1,0 +1,52 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
+  }
+
+  .containerL {
+    text-align: left;
+    padding: 20px;
+  }
+  
+  .titleL {
+    font-size: 2rem;
+    margin-bottom: 5px;
+  }
+
+  .divider {
+    width: 100%;
+    height: 2px;
+    background-color: #a02040;
+    margin: 10px 0 20px;
+  }
+
+  .container {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .fila {
+    display: flex;
+    gap: 15px;
+    background: #f8e6e6;
+    padding: 15px;
+    border-radius: 10px;
+  }
+
+  .botonregistraru {
+    background: green;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .botonregistraru:hover {
+    background: darkgreen;
+  }

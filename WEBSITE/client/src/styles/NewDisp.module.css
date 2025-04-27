@@ -79,3 +79,16 @@
   .botonactualizar:hover {
     background: darkgreen;
   }
+
+  .botoneliminar {
+    background: red;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .botoneliminar:hover {
+    background: darkred;
+  }

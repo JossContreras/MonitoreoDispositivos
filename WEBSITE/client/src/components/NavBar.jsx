@@ -7,7 +7,7 @@ export function NavBar() {
                 <h1 className={styles.title}>Inventario</h1>
 
                 <div className={styles.navlinks}>
-                    <a href="#">Monitoreo</a>
+                    <a href="http://127.0.0.1:8000/monitoreo/home/">Monitoreo</a>
                     <a href="/Inicio">Inicio</a>
                 </div>
 

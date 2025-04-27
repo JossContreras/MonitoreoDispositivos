@@ -1,8 +1,3 @@
-from django.utils import timezone
-from django.db import models
-
-# Create your models here.
-
 # This is an auto-generated Django model module.
 # You'll have to do the following manually to clean this up:
 #   * Rearrange models' order
@@ -165,6 +160,17 @@ class DjangoSession(models.Model):
         db_table = 'django_session'
 
 
+class Enlaces(models.Model):
+    id_enlace = models.AutoField(primary_key=True)
+    dispositivo_origen = models.ForeignKey('Inventario', models.DO_NOTHING, db_column='dispositivo_origen')
+    dispositivo_destino = models.ForeignKey('Inventario', models.DO_NOTHING, db_column='dispositivo_destino', related_name='enlaces_dispositivo_destino_set')
+    estado = models.CharField(max_length=10, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'enlaces'
+
+
 class HistorialCambios(models.Model):
     id_historial = models.AutoField(primary_key=True)
     id_inventario = models.ForeignKey('Inventario', models.DO_NOTHING, db_column='id_inventario')
@@ -175,6 +181,16 @@ class HistorialCambios(models.Model):
     class Meta:
         managed = False
         db_table = 'historial_cambios'
+
+
+class HistorialRutaDispositivo(models.Model):
+    id_ruta = models.ForeignKey('Rutas', models.DO_NOTHING, db_column='id_ruta')
+    dispositivos_con_error = models.TextField(blank=True, null=True)
+    fecha = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'historial_ruta_dispositivo'
 
 
 class Incidentes(models.Model):
@@ -197,10 +213,63 @@ class Inventario(models.Model):
     estado = models.CharField(max_length=50, blank=True, null=True)
     fecha_adquisicion = models.DateField(blank=True, null=True)
     id_ubicacion = models.ForeignKey('Ubicacion', models.DO_NOTHING, db_column='id_ubicacion')
+    ip = models.CharField(unique=True, max_length=15, blank=True, null=True)
 
     class Meta:
         managed = False
         db_table = 'inventario'
+
+
+class InventarioDispositivo(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    nombre = models.CharField(max_length=255)
+    tipo_elemento = models.CharField(max_length=100)
+    estado = models.CharField(max_length=50)
+    fecha_adquisicion = models.DateField()
+    marca = models.CharField(max_length=100)
+    modelo = models.CharField(max_length=100)
+    numero_serie = models.CharField(max_length=255)
+    sistema_operativo = models.CharField(max_length=255, blank=True, null=True)
+    version_firmware = models.CharField(max_length=255, blank=True, null=True)
+    descripcion_configuracion = models.TextField(blank=True, null=True)
+    parametros_personalizados = models.TextField(blank=True, null=True)
+    fecha_creacion = models.DateTimeField()
+    ubicacion = models.ForeignKey('Ubicacion', models.DO_NOTHING, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'inventario_dispositivo'
+
+
+class Monitoreo(models.Model):
+    id_monitoreo = models.AutoField(primary_key=True)
+    id_inventario = models.ForeignKey(Inventario, models.DO_NOTHING, db_column='id_inventario')
+    fecha_hora = models.DateTimeField(blank=True, null=True)
+    estado = models.CharField(max_length=10, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'monitoreo'
+
+
+class RutaDispositivos(models.Model):
+    id_ruta = models.ForeignKey('Rutas', models.DO_NOTHING, db_column='id_ruta')
+    id_inventario = models.ForeignKey(Inventario, models.DO_NOTHING, db_column='id_inventario')
+    orden = models.IntegerField()
+
+    class Meta:
+        managed = False
+        db_table = 'ruta_dispositivos'
+
+
+class Rutas(models.Model):
+    id_ruta = models.AutoField(primary_key=True)
+    nombre_ruta = models.CharField(max_length=255)
+    descripcion = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'rutas'
 
 
 class Ubicacion(models.Model):
@@ -223,30 +292,3 @@ class UbicacionDependencia(models.Model):
         managed = False
         db_table = 'ubicacion_dependencia'
         unique_together = (('id_ubicacion', 'id_dependencia'),)
-
-#============================================================================================================
-
-class Dispositivo(models.Model):
-    # Información Básica
-    nombre = models.CharField(max_length=255)
-    tipo_elemento = models.CharField(max_length=100)
-    estado = models.CharField(max_length=50)
-    fecha_adquisicion = models.DateField(default=timezone.now)
-    ubicacion = models.ForeignKey(Ubicacion, on_delete=models.SET_NULL, null=True, blank=True)
-
-    # Detalles Técnicos
-    marca = models.CharField(max_length=100)
-    modelo = models.CharField(max_length=100)
-    numero_serie = models.CharField(max_length=255)
-    sistema_operativo = models.CharField(max_length=255, blank=True, null=True)
-    version_firmware = models.CharField(max_length=255, blank=True, null=True)
-
-    # Configuración Inicial
-    descripcion_configuracion = models.TextField(blank=True, null=True)
-    parametros_personalizados = models.TextField(blank=True, null=True)
-
-    # Fecha de creación automática
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.nombre

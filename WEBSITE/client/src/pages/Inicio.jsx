@@ -43,6 +43,12 @@ export function Inicio () {
                         <h2>Lista</h2>
                         <p className={styles.green}>Consulte la lista completa de elementos</p>
                     </Link>
+
+                    <Link to="/RegL" className={styles.tarea}>
+                        <img src={IconoList} alt="Registro de ubicaciones"/>
+                        <h2>Registro ubicaciones</h2>
+                        <p className={styles.green}>Registre ubicaciones disponibles para los equipos</p>
+                    </Link>
                 </div>
             </div>
         </div></>
