@@ -5,6 +5,8 @@ HOME
 DISPOSITIVOS
 ![DISPOSITIVOS](https://github.com/user-attachments/assets/cf8dff2c-ab6d-4503-8151-895e9c07bc76)
 
+DETALLES DISPOSITIVO
+![Captura de pantalla_15-7-2025_17545_127 0 0 1](https://github.com/user-attachments/assets/a7853cf1-cbeb-405d-a2e9-d334eafa7a36)
 
 REPORTES
 ![REPORTES](https://github.com/user-attachments/assets/7e06f567-29c8-4bed-8ad1-32b78be8587d)
