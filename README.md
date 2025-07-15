@@ -1,3 +1,37 @@
+
+HOME
+![HOME](https://github.com/user-attachments/assets/e3679383-be48-46b8-a614-db3a5df077ae)
+
+DISPOSITIVOS
+![DISPOSITIVOS](https://github.com/user-attachments/assets/cf8dff2c-ab6d-4503-8151-895e9c07bc76)
+
+
+REPORTES
+![REPORTES](https://github.com/user-attachments/assets/7e06f567-29c8-4bed-8ad1-32b78be8587d)
+
+
+RUTAS
+![RUTAS](https://github.com/user-attachments/assets/98b3f4ef-5789-4a32-a899-68b1e90c35a2)
+
+
+CREAR RUTAS
+![CREAR RUTA](https://github.com/user-attachments/assets/f345c066-0ed6-4951-93f8-4db23e41f8b6)
+
+
+PING DISPOSITIVOS
+![PING DISPOSITIVOS](https://github.com/user-attachments/assets/48e35b85-742a-4f14-bc88-488331855574)
+
+
+ELIMINAR RUTA
+![ELIMINAR RUTA](https://github.com/user-attachments/assets/52497182-1dc4-4b60-905a-1854d30f6eb5)
+
+
+EDITAR RUTA
+![EDITAR RUTA](https://github.com/user-attachments/assets/122b46d6-2b74-447d-b958-713997b6f3b0)
+
+
+
+
 Pasos para instalar el sistema:
 Descargar archivos y abrirlo en el editor de texto (VS)
 
